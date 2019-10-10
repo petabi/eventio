@@ -6,16 +6,32 @@ use kafka::error::{Error, ErrorKind};
 use kafka::producer::{Producer, Record, RequiredAcks};
 use rmp_serde::Serializer;
 use serde::Serialize;
+use std::convert::TryInto;
+
+#[derive(Debug)]
+pub struct Event {
+    pub entry: Entry,
+    pub loc: EntryLocation,
+}
+
+#[derive(Debug)]
+pub struct EntryLocation {
+    pub remainder: u32, // # of entries in the message after this entry
+    pub partition: i32,
+    pub offset: i64,
+}
 
 /// Event reader for Apache Kafka.
 pub struct Input {
-    channel: crossbeam_channel::Sender<Entry>,
+    data_channel: Option<crossbeam_channel::Sender<Event>>,
+    ack_channel: crossbeam_channel::Receiver<EntryLocation>,
     consumer: Consumer,
 }
 
 impl Input {
     pub fn new(
-        channel: crossbeam_channel::Sender<Entry>,
+        data_channel: crossbeam_channel::Sender<Event>,
+        ack_channel: crossbeam_channel::Receiver<EntryLocation>,
         hosts: Vec<String>,
         group: String,
         client_id: String,
@@ -29,15 +45,30 @@ impl Input {
             .with_client_id(client_id)
             .with_topic(topic)
             .create()?;
-        Ok(Self { channel, consumer })
+        Ok(Self {
+            data_channel: Some(data_channel),
+            ack_channel,
+            consumer,
+        })
     }
 
     pub fn run(&mut self) -> Result<(), Error> {
+        let data_channel = if let Some(channel) = &self.data_channel {
+            channel
+        } else {
+            return Err(Error::from_kind(ErrorKind::Msg("channel closed".into())));
+        };
+
         let messagesets = self.consumer.poll()?;
         if messagesets.is_empty() {
             return Ok(());
         }
+
+        let mut sel = crossbeam_channel::Select::new();
+        let send_data = sel.send(data_channel);
+        let recv_ack = sel.recv(&self.ack_channel);
         for msgset in messagesets.iter() {
+            let partition = msgset.partition();
             for msg in msgset.messages() {
                 let fwd_msg = (rmp_serde::from_slice(msg.value)
                     as Result<ForwardMode, rmp_serde::decode::Error>)
@@ -47,16 +78,70 @@ impl Input {
                             e
                         )))
                     })?;
-                for entry in fwd_msg.entries {
-                    self.channel.send(entry).map_err(|e| {
-                        Error::from_kind(ErrorKind::Msg(format!(
-                            "cannot send message through channel: {}",
-                            e
-                        )))
-                    })?;
+                if fwd_msg.entries.len() > u32::max_value() as usize {
+                    return Err(Error::from_kind(ErrorKind::Msg("too many entires".into())));
+                }
+                let offset = msg.offset;
+                for (remainder, entry) in (0..fwd_msg.entries.len()).rev().zip(fwd_msg.entries) {
+                    loop {
+                        let oper = sel.select();
+                        match oper.index() {
+                            i if i == send_data => {
+                                let event = Event {
+                                    entry,
+                                    loc: EntryLocation {
+                                        remainder: remainder
+                                            .try_into()
+                                            .expect("remainder <= u32::max_values()"),
+                                        partition,
+                                        offset,
+                                    },
+                                };
+                                oper.send(data_channel, event).map_err(|e| {
+                                    Error::from_kind(ErrorKind::Msg(format!(
+                                        "cannot send message through channel: {}",
+                                        e
+                                    )))
+                                })?;
+                                break;
+                            }
+                            i if i == recv_ack => {
+                                let ack = oper.recv(&self.ack_channel).map_err(|e| {
+                                    Error::from_kind(ErrorKind::Msg(format!(
+                                        "cannot receive message through channel: {}",
+                                        e
+                                    )))
+                                })?;
+                                if ack.remainder == 0 {
+                                    self.consumer.consume_message(
+                                        msgset.topic(),
+                                        ack.partition,
+                                        ack.offset,
+                                    )?;
+                                }
+                                if self.ack_channel.is_empty() {
+                                    self.consumer.commit_consumed()?;
+                                }
+                            }
+                            _ => unreachable!(),
+                        }
+                    }
                 }
             }
-            self.consumer.consume_messageset(msgset)?;
+        }
+        self.data_channel = None;
+        let topic = self
+            .consumer
+            .subscriptions()
+            .keys()
+            .next()
+            .expect("subscribes to one topic")
+            .clone();
+        for ack in &self.ack_channel {
+            if ack.remainder == 0 {
+                self.consumer
+                    .consume_message(&topic, ack.partition, ack.offset)?;
+            }
         }
         self.consumer.commit_consumed()?;
         Ok(())
@@ -65,7 +150,7 @@ impl Input {
 
 /// Event writer for Apache Kafka.
 pub struct Output<T> {
-    channel: crossbeam_channel::Receiver<T>,
+    data_channel: crossbeam_channel::Receiver<T>,
     producer: Producer,
     topic: String,
 }
@@ -75,7 +160,7 @@ where
     T: std::fmt::Debug + Into<ForwardMode> + Serialize,
 {
     pub fn new(
-        channel: crossbeam_channel::Receiver<T>,
+        data_channel: crossbeam_channel::Receiver<T>,
         hosts: Vec<String>,
         topic: String,
     ) -> Result<Self, Error> {
@@ -83,7 +168,7 @@ where
             .with_required_acks(RequiredAcks::One)
             .create()?;
         Ok(Self {
-            channel,
+            data_channel,
             producer,
             topic,
         })
@@ -91,7 +176,7 @@ where
 
     pub fn run(&mut self) -> Result<(), Error> {
         let mut buf = Vec::new();
-        for msg in self.channel.iter() {
+        for msg in self.data_channel.iter() {
             msg.serialize(&mut Serializer::new(&mut buf)).map_err(|e| {
                 Error::from_kind(ErrorKind::Msg(format!("cannot serialize: {}", e)))
             })?;

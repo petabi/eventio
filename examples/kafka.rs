@@ -45,9 +45,11 @@ fn produce(hosts: Vec<String>) {
 }
 
 fn consume(hosts: Vec<String>) {
-    let (tx, rx) = crossbeam_channel::bounded(1);
+    let (data_tx, data_rx) = crossbeam_channel::bounded(1);
+    let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
     let mut input = kafka::Input::new(
-        tx,
+        data_tx,
+        ack_rx,
         hosts,
         "eventio".into(),
         "eventio-examples".into(),
@@ -60,8 +62,12 @@ fn consume(hosts: Vec<String>) {
         time: 0,
         record: HashMap::new(),
     };
-    for e in rx {
-        entry = e;
+    {
+        let ack_tx = ack_tx;
+        for ev in data_rx {
+            ack_tx.send(ev.loc).unwrap();
+            entry = ev.entry;
+        }
     }
     in_thread.join().unwrap();
 
