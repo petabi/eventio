@@ -5,7 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 /// An array representation of pairs of time and record, used in Forward mode.
 ///
@@ -16,7 +16,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Entry {
     pub time: u64,
-    pub record: BTreeMap<String, ByteBuf>,
+    pub record: HashMap<String, ByteBuf>,
 }
 
 /// A series of events packed into a single message.
@@ -29,5 +29,5 @@ pub struct Entry {
 pub struct ForwardMode {
     pub tag: String,
     pub entries: Vec<Entry>,
-    pub option: Option<BTreeMap<String, String>>,
+    pub option: Option<HashMap<String, String>>,
 }

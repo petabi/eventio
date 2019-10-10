@@ -1,7 +1,6 @@
 //! Reading/writing events from/to Apache Kafka servers.
 
-use crate::fluentd::ForwardMode;
-use crate::Event;
+use crate::fluentd::{Entry, ForwardMode};
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use kafka::error::{Error, ErrorKind};
 use kafka::producer::{Producer, Record, RequiredAcks};
@@ -10,13 +9,13 @@ use serde::Serialize;
 
 /// Event reader for Apache Kafka.
 pub struct Input {
-    channel: crossbeam_channel::Sender<Event<u8>>,
+    channel: crossbeam_channel::Sender<Entry>,
     consumer: Consumer,
 }
 
 impl Input {
     pub fn new(
-        channel: crossbeam_channel::Sender<Event<u8>>,
+        channel: crossbeam_channel::Sender<Entry>,
         hosts: Vec<String>,
         group: String,
         client_id: String,
@@ -49,14 +48,7 @@ impl Input {
                         )))
                     })?;
                 for entry in fwd_msg.entries {
-                    let event = entry
-                        .record
-                        .get("message")
-                        .map(|v| Event::from_slice(entry.time, v.as_slice()))
-                        .ok_or_else(|| {
-                            Error::from_kind(ErrorKind::Msg("no message field in record".into()))
-                        })?;
-                    self.channel.send(event).map_err(|e| {
+                    self.channel.send(entry).map_err(|e| {
                         Error::from_kind(ErrorKind::Msg(format!(
                             "cannot send message through channel: {}",
                             e
