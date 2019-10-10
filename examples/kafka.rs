@@ -1,7 +1,7 @@
 use eventio::fluentd::{Entry, ForwardMode};
-use eventio::{kafka, Event};
+use eventio::kafka;
 use serde_bytes::ByteBuf;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::env;
 use std::thread;
 
@@ -26,7 +26,7 @@ fn produce(hosts: Vec<String>) {
         let mut output = kafka::Output::new(rx, hosts, TOPIC.into()).unwrap();
         let out_thread = thread::spawn(move || output.run().unwrap());
 
-        let mut record = BTreeMap::new();
+        let mut record = HashMap::new();
         record.insert("message".into(), ByteBuf::from(b"\x01\x02\x03".to_vec()));
         let entry = Entry {
             time: 123,
@@ -56,15 +56,15 @@ fn consume(hosts: Vec<String>) {
     .unwrap();
     let in_thread = thread::spawn(move || input.run().unwrap());
 
-    let mut event = Event {
-        id: 0,
-        data: Vec::new(),
+    let mut entry = Entry {
+        time: 0,
+        record: HashMap::new(),
     };
     for e in rx {
-        event = e;
+        entry = e;
     }
     in_thread.join().unwrap();
 
-    assert_eq!(event.id, 123);
-    assert_eq!(event.data, b"\x01\x02\x03");
+    assert_eq!(entry.time, 123);
+    assert_eq!(entry.record["message"], b"\x01\x02\x03");
 }
