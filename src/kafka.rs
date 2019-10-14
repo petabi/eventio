@@ -59,72 +59,80 @@ impl Input {
             return Err(Error::ChannelClosed);
         };
 
-        let messagesets = self
-            .consumer
-            .poll()
-            .map_err(|e| Error::CannotFetch(Box::new(e)))?;
-        if messagesets.is_empty() {
-            return Ok(());
-        }
-
         let mut sel = crossbeam_channel::Select::new();
         let send_data = sel.send(data_channel);
         let recv_ack = sel.recv(&self.ack_channel);
-        'messagesets: for msgset in messagesets.iter() {
-            let partition = msgset.partition();
-            for msg in msgset.messages() {
-                let fwd_msg: ForwardMode = rmp_serde::from_slice(msg.value)
-                    .map_err(|e| Error::InvalidMessage(Box::new(e)))?;
-                if fwd_msg.entries.len() > u32::max_value() as usize {
-                    return Err(Error::TooManyEvents(fwd_msg.entries.len()));
-                }
-                let offset = msg.offset;
-                for (remainder, entry) in (0..fwd_msg.entries.len()).rev().zip(fwd_msg.entries) {
-                    loop {
-                        let oper = sel.select();
-                        match oper.index() {
-                            i if i == send_data => {
-                                let event = Event {
-                                    entry,
-                                    loc: EntryLocation {
-                                        remainder: remainder
-                                            .try_into()
-                                            .expect("remainder <= u32::max_values()"),
-                                        partition,
-                                        offset,
-                                    },
-                                };
-                                if oper.send(data_channel, event).is_err() {
-                                    // data_channel was disconnected. Exit the
-                                    // loop and commit consumed.
-                                    break 'messagesets;
+
+        'poll: loop {
+            let messagesets = self
+                .consumer
+                .poll()
+                .map_err(|e| Error::CannotFetch(Box::new(e)))?;
+            if messagesets.is_empty() {
+                break 'poll;
+            }
+            for msgset in messagesets.iter() {
+                let partition = msgset.partition();
+                for msg in msgset.messages() {
+                    let fwd_msg: ForwardMode = rmp_serde::from_slice(msg.value)
+                        .map_err(|e| Error::InvalidMessage(Box::new(e)))?;
+                    if fwd_msg.entries.len() > u32::max_value() as usize {
+                        return Err(Error::TooManyEvents(fwd_msg.entries.len()));
+                    }
+                    let offset = msg.offset;
+                    for (remainder, entry) in (0..fwd_msg.entries.len()).rev().zip(fwd_msg.entries)
+                    {
+                        loop {
+                            let oper = sel.select();
+                            match oper.index() {
+                                i if i == send_data => {
+                                    let event = Event {
+                                        entry,
+                                        loc: EntryLocation {
+                                            remainder: remainder
+                                                .try_into()
+                                                .expect("remainder <= u32::max_values()"),
+                                            partition,
+                                            offset,
+                                        },
+                                    };
+                                    if oper.send(data_channel, event).is_err() {
+                                        // data_channel was disconnected. Exit the
+                                        // loop and commit consumed.
+                                        break 'poll;
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
-                            i if i == recv_ack => {
-                                let ack = if let Ok(ack) = oper.recv(&self.ack_channel) {
-                                    ack
-                                } else {
-                                    // ack_channel was disconnected. Exit the
-                                    // loop and commit consumed.
-                                    break 'messagesets;
-                                };
-                                if ack.remainder == 0 {
-                                    self.consumer
-                                        .consume_message(msgset.topic(), ack.partition, ack.offset)
-                                        .map_err(|_| {
-                                            Error::Fatal(
-                                                "messages from Kafka have different topics".into(),
+                                i if i == recv_ack => {
+                                    let ack = if let Ok(ack) = oper.recv(&self.ack_channel) {
+                                        ack
+                                    } else {
+                                        // ack_channel was disconnected. Exit the
+                                        // loop and commit consumed.
+                                        break 'poll;
+                                    };
+                                    if ack.remainder == 0 {
+                                        self.consumer
+                                            .consume_message(
+                                                msgset.topic(),
+                                                ack.partition,
+                                                ack.offset,
                                             )
-                                        })?;
+                                            .map_err(|_| {
+                                                Error::Fatal(
+                                                    "messages from Kafka have different topics"
+                                                        .into(),
+                                                )
+                                            })?;
+                                    }
+                                    if self.ack_channel.is_empty() {
+                                        self.consumer
+                                            .commit_consumed()
+                                            .map_err(|e| Error::CannotCommit(Box::new(e)))?;
+                                    }
                                 }
-                                if self.ack_channel.is_empty() {
-                                    self.consumer
-                                        .commit_consumed()
-                                        .map_err(|e| Error::CannotCommit(Box::new(e)))?;
-                                }
+                                _ => unreachable!(),
                             }
-                            _ => unreachable!(),
                         }
                     }
                 }
