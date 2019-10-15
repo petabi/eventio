@@ -51,8 +51,10 @@ impl Input {
             consumer,
         })
     }
+}
 
-    pub fn run(&mut self) -> Result<(), Error> {
+impl super::Input for Input {
+    fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
         } else {

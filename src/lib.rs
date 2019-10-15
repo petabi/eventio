@@ -5,13 +5,14 @@
 
 pub mod fluentd;
 pub mod kafka;
+pub mod text;
 
 use std::error;
 use std::fmt;
 
 /// A trait for a data source that produces messages of type `S`.
 pub trait Input {
-    fn run(&mut self) -> Result<(), Error>;
+    fn run(self) -> Result<(), Error>;
 }
 
 /// The error type for event I/O operations.
