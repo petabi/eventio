@@ -1,5 +1,5 @@
 use eventio::fluentd::{Entry, ForwardMode};
-use eventio::kafka;
+use eventio::{kafka, Input};
 use serde_bytes::ByteBuf;
 use std::collections::HashMap;
 use std::env;
@@ -47,7 +47,7 @@ fn produce(hosts: Vec<String>) {
 fn consume(hosts: Vec<String>) {
     let (data_tx, data_rx) = crossbeam_channel::bounded(1);
     let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
-    let mut input = kafka::Input::new(
+    let input = kafka::Input::new(
         data_tx,
         ack_rx,
         hosts,
