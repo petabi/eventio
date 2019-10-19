@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 crossbeam-channel = "0.3"
 kafka = "0.8"
-pcap-parser = "0.8"
+pcap-parser = { version = "0.8", features = ["data"] }
 rmp-serde = "0.14"
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
