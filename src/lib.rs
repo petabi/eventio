@@ -5,6 +5,7 @@
 
 pub mod fluentd;
 pub mod kafka;
+pub mod pcap;
 pub mod text;
 
 use std::error;
