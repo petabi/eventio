@@ -70,19 +70,16 @@ impl<'a, R: Read + 'a> super::Input for Input<'a, R> {
             match self.iter.next() {
                 Ok((offset, block)) => {
                     let res = match block {
-                        PcapBlockOwned::NG(Block::SectionHeader(ref _shb)) => None,
-                        PcapBlockOwned::NG(Block::InterfaceDescription(ref _idb)) => None,
                         PcapBlockOwned::NG(Block::EnhancedPacket(ref epb)) => {
                             get_packetdata_ethernet(epb.data, epb.caplen as usize)
                         }
                         PcapBlockOwned::NG(Block::SimplePacket(ref spb)) => {
                             get_packetdata_ethernet(spb.data, (spb.block_len1 - 16) as usize)
                         }
-                        PcapBlockOwned::NG(_) => None,
+                        PcapBlockOwned::NG(_) | PcapBlockOwned::LegacyHeader(_) => None,
                         PcapBlockOwned::Legacy(lpb) => {
                             get_packetdata_ethernet(lpb.data, lpb.caplen as usize)
                         }
-                        PcapBlockOwned::LegacyHeader(_) => None,
                     };
 
                     if let Some(PacketData::L2(eslice)) = res {
