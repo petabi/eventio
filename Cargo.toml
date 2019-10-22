@@ -11,3 +11,7 @@ pcap-parser = { version = "0.8", features = ["data"] }
 rmp-serde = "0.14"
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
+
+[dev-dependencies]
+mktemp = "0.4"
+pcap-file = "0.10"

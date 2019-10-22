@@ -137,3 +137,47 @@ impl<'a, R: Read + 'a> super::Input for Input<'a, R> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{pcap, Input};
+    use mktemp::Temp;
+    use pcap_file::{Packet, PcapWriter};
+    use std::fs::File;
+    use std::thread;
+
+    fn test_pcap() -> Temp {
+        let tester = Temp::new_path();
+        let file = File::create(tester.as_path()).expect("Error creating file");
+        let mut pcap_writer = PcapWriter::new(file).unwrap();
+        let fake_content = b"fake packet";
+        let pkt = Packet::new(0, 0, fake_content.len() as u32, fake_content);
+        for _ in (0..10).into_iter() {
+            pcap_writer.write_packet(&pkt).unwrap();
+        }
+        tester
+    }
+
+    #[test]
+    fn text_input() {
+        let tester = test_pcap();
+        let (data_tx, data_rx) = crossbeam_channel::bounded(1);
+        let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
+        let in_thread = thread::spawn(move || {
+            let input = pcap::Input::<File>::with_path(data_tx, ack_rx, tester.as_path()).unwrap();
+            input.run().unwrap()
+        });
+
+        let mut events = Vec::new();
+        {
+            let ack_tx = ack_tx;
+            for ev in data_rx {
+                events.push(ev.raw);
+                ack_tx.send(ev.id).unwrap();
+            }
+        }
+        in_thread.join().unwrap();
+
+        assert_eq!(events.len(), 10);
+    }
+}
