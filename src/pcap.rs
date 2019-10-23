@@ -138,30 +138,32 @@ impl<'a, R: Read + 'a> super::Input for Input<'a, R> {
 #[cfg(test)]
 mod tests {
     use crate::{pcap, Input};
-    use mktemp::Temp;
     use pcap_file::{Packet, PcapWriter};
-    use std::fs::File;
+    use std::io::Cursor;
     use std::thread;
 
-    fn test_pcap() -> Temp {
-        let tester = Temp::new_path();
-        let file = File::create(tester.as_path()).expect("Error creating file");
-        let mut pcap_writer = PcapWriter::new(file).unwrap();
+    fn create_pcap() -> Cursor<Vec<u8>> {
+        let buff = Cursor::new(vec![0; 1028]);
+        let mut pcap_writer = PcapWriter::new(buff).unwrap();
         let fake_content = b"fake packet";
         let pkt = Packet::new(0, 0, fake_content.len() as u32, fake_content);
         for _ in (0..10).into_iter() {
             pcap_writer.write_packet(&pkt).unwrap();
         }
-        tester
+        let buff = pcap_writer.into_writer();
+        let len = buff.position() as usize;
+        let mut vec = buff.into_inner();
+        vec.resize(len, 0);
+        Cursor::new(vec)
     }
 
     #[test]
     fn text_input() {
-        let tester = test_pcap();
+        let tester = create_pcap();
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
         let in_thread = thread::spawn(move || {
-            let input = pcap::Input::<File>::with_path(data_tx, ack_rx, tester.as_path()).unwrap();
+            let input = pcap::Input::with_read(data_tx, ack_rx, tester);
             input.run().unwrap()
         });
 
