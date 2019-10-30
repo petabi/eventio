@@ -26,9 +26,12 @@ pub struct Input {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<EntryLocation>,
     consumer: Consumer,
+    fetch_limit: usize,
 }
 
 impl Input {
+    /// Creates `Input` that fetches at most `fetch_limit` entries from the
+    /// given Kafka topic.
     pub fn new(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<EntryLocation>,
@@ -36,6 +39,7 @@ impl Input {
         group: String,
         client_id: String,
         topic: String,
+        fetch_limit: usize,
     ) -> Result<Self, kafka::Error> {
         let consumer = Consumer::from_hosts(hosts)
             .with_group(group)
@@ -49,6 +53,7 @@ impl Input {
             data_channel: Some(data_channel),
             ack_channel,
             consumer,
+            fetch_limit,
         })
     }
 }
@@ -80,6 +85,13 @@ impl super::Input for Input {
                         .map_err(|e| Error::InvalidMessage(Box::new(e)))?;
                     if fwd_msg.entries.len() > u32::max_value() as usize {
                         return Err(Error::TooManyEvents(fwd_msg.entries.len()));
+                    }
+                    let (remaining, overflow) =
+                        self.fetch_limit.overflowing_sub(fwd_msg.entries.len());
+                    if overflow {
+                        break 'poll;
+                    } else {
+                        self.fetch_limit = remaining;
                     }
                     let offset = msg.offset;
                     for (remainder, entry) in (0..fwd_msg.entries.len()).rev().zip(fwd_msg.entries)
