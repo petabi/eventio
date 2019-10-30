@@ -11,6 +11,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `text::Input` reads each line in a text file as an event.
 - `pcap::Input` reads each packet in a pcap file as an event.
 
+### Changed
+
+- `kafka::Input` fetches no more entries than the specified limit.
+
 ## [0.1.0] - 2019-10-14
 
 ### Added
