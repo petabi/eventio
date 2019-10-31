@@ -1,9 +1,7 @@
 //! Reading packets as events from a pcap file.
 
 use crate::Error;
-use std::fs::File;
 use std::io::{self, Read};
-use std::path::Path;
 
 use pcap_parser::{
     create_reader, data::get_packetdata_ethernet, data::PacketData, traits::PcapReaderIterator,
@@ -18,29 +16,13 @@ pub struct Event {
 
 const PCAP_BUFFER_SIZE: usize = 65536;
 
-pub struct Input<'a, R: Read + 'a> {
+pub struct Input<R: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
-    iter: Box<dyn PcapReaderIterator<R> + 'a>,
+    iter: Box<dyn PcapReaderIterator<R>>,
 }
 
-impl<'a, R: Read + 'a> Input<'a, R> {
-    pub fn with_path<P: AsRef<Path>>(
-        data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<u64>,
-        path: P,
-    ) -> io::Result<Input<'a, File>> {
-        let file = File::open(path.as_ref())?;
-        let iter = create_reader(PCAP_BUFFER_SIZE, file)
-            .map_err(|_| io::Error::new(io::ErrorKind::Other, "pcap error"))?;
-
-        Ok(Input {
-            data_channel: Some(data_channel),
-            ack_channel,
-            iter,
-        })
-    }
-
+impl<R: Read + 'static> Input<R> {
     pub fn with_read(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<u64>,
@@ -54,7 +36,7 @@ impl<'a, R: Read + 'a> Input<'a, R> {
     }
 }
 
-impl<'a, R: Read + 'a> super::Input for Input<'a, R> {
+impl<R: Read> super::Input for Input<R> {
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
