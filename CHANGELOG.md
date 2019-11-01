@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Traits to handle events, common to all the input types.
 
+### Changed
+
+- `text::Input` can handle a non-UTF-8 text input.
+
 ## [0.2.0] - 2019-10-30
 
 ### Added
