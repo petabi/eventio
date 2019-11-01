@@ -1,36 +1,36 @@
-//! Reading lines as events from a text file.
+//! Reading lines as events from a text input.
 
 use crate::Error;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read};
-use std::path::Path;
+use std::io::{BufRead, BufReader, Read};
 
+/// A line in a text input.
 #[derive(Debug)]
 pub struct Event {
     pub raw: String,
     pub line_no: u64,
 }
 
-/// Event reader for a text file.
+impl crate::Event for Event {
+    type Ack = u64;
+
+    fn raw(&self) -> &[u8] {
+        self.raw.as_bytes()
+    }
+
+    fn time(&self) -> u64 {
+        self.line_no
+    }
+
+    fn ack(&self) -> Self::Ack {
+        self.line_no
+    }
+}
+
+/// Event reader for a text input.
 pub struct Input<T: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
     buf: BufReader<T>,
-}
-
-impl<T: From<File> + Read> Input<T> {
-    pub fn with_path<P: AsRef<Path>>(
-        data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<u64>,
-        path: P,
-    ) -> Result<Self, io::Error> {
-        let file = File::open(path.as_ref())?;
-        Ok(Self {
-            data_channel: Some(data_channel),
-            ack_channel,
-            buf: BufReader::new(file.into()),
-        })
-    }
 }
 
 impl<T: Read> Input<T> {
@@ -48,6 +48,9 @@ impl<T: Read> Input<T> {
 }
 
 impl<T: Read> super::Input for Input<T> {
+    type Data = Event;
+    type Ack = u64;
+
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel

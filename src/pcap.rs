@@ -1,4 +1,4 @@
-//! Reading packets as events from a pcap file.
+//! Reading packets as events from a pcap input.
 
 use crate::Error;
 use std::io::{self, Read};
@@ -8,14 +8,32 @@ use pcap_parser::{
     Block, PcapBlockOwned, PcapError,
 };
 
+/// A packet in a pcap input.
 #[derive(Debug)]
 pub struct Event {
     pub raw: Vec<u8>,
     pub id: u64,
 }
 
+impl crate::Event for Event {
+    type Ack = u64;
+
+    fn raw(&self) -> &[u8] {
+        self.raw.as_slice()
+    }
+
+    fn time(&self) -> u64 {
+        self.id
+    }
+
+    fn ack(&self) -> Self::Ack {
+        self.id
+    }
+}
+
 const PCAP_BUFFER_SIZE: usize = 65536;
 
+/// Event reader for a pcap input.
 pub struct Input<R: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
@@ -37,6 +55,9 @@ impl<R: Read + 'static> Input<R> {
 }
 
 impl<R: Read> super::Input for Input<R> {
+    type Data = Event;
+    type Ack = u64;
+
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
@@ -140,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn text_input() {
+    fn pcap_input() {
         let tester = create_pcap();
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);

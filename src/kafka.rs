@@ -8,13 +8,33 @@ use rmp_serde::Serializer;
 use serde::Serialize;
 use std::convert::TryInto;
 
+/// An event included in a Kafka message at `loc`.
 #[derive(Debug)]
 pub struct Event {
     pub entry: Entry,
     pub loc: EntryLocation,
 }
 
-#[derive(Debug)]
+impl crate::Event for Event {
+    type Ack = EntryLocation;
+
+    fn raw(&self) -> &[u8] {
+        self.entry
+            .record
+            .get("message")
+            .map_or(b"", |v| v.as_slice())
+    }
+
+    fn time(&self) -> u64 {
+        self.entry.time
+    }
+
+    fn ack(&self) -> Self::Ack {
+        self.loc
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct EntryLocation {
     remainder: u32, // # of entries in the message after this entry
     partition: i32,
@@ -59,6 +79,9 @@ impl Input {
 }
 
 impl super::Input for Input {
+    type Data = Event;
+    type Ack = EntryLocation;
+
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
