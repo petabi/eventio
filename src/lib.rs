@@ -11,9 +11,23 @@ pub mod text;
 use std::error;
 use std::fmt;
 
-/// A trait for a data source that produces messages of type `S`.
+/// A trait for a data source that produces messages of type `Data`.
 pub trait Input {
+    type Data;
+    type Ack;
+
+    /// Fetches events and send them as `Data`. It also receives and processes
+    /// `Ack`, which acknowledges the receipt of a certain `Data`.
     fn run(self) -> Result<(), Error>;
+}
+
+/// A trait for a single event from any type of data source.
+pub trait Event {
+    type Ack;
+
+    fn raw(&self) -> &[u8];
+    fn time(&self) -> u64;
+    fn ack(&self) -> Self::Ack;
 }
 
 /// The error type for event I/O operations.
