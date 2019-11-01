@@ -2,11 +2,12 @@
 
 use crate::Error;
 use std::io::{BufRead, BufReader, Read};
+use std::mem;
 
 /// A line in a text input.
 #[derive(Debug)]
 pub struct Event {
-    pub raw: String,
+    pub raw: Vec<u8>,
     pub line_no: u64,
 }
 
@@ -14,7 +15,7 @@ impl crate::Event for Event {
     type Ack = u64;
 
     fn raw(&self) -> &[u8] {
-        self.raw.as_bytes()
+        self.raw.as_slice()
     }
 
     fn time(&self) -> u64 {
@@ -62,14 +63,30 @@ impl<T: Read> super::Input for Input<T> {
         let send_data = sel.send(data_channel);
         let recv_ack = sel.recv(&self.ack_channel);
         let mut line_no = 0;
-        'poll: for line in self.buf.lines() {
-            let line = line.map_err(|e| Error::CannotFetch(Box::new(e)))?;
+        let mut line = Vec::new();
+        'poll: loop {
+            let mut len = self
+                .buf
+                .read_until(b'\n', &mut line)
+                .map_err(|e| Error::CannotFetch(Box::new(e)))?;
+            if len == 0 {
+                break;
+            }
+            if line[len - 1] == b'\n' {
+                len -= 1;
+                if len > 0 && line[len - 1] == b'\r' {
+                    len -= 1;
+                }
+            }
+            line.truncate(len);
             line_no += 1;
             loop {
                 let oper = sel.select();
                 match oper.index() {
                     i if i == send_data => {
-                        let event = Event { raw: line, line_no };
+                        let mut raw = Vec::new();
+                        mem::swap(&mut line, &mut raw);
+                        let event = Event { raw, line_no };
                         if oper.send(data_channel, event).is_err() {
                             // data_channel was disconnected. Exit the
                             // loop and commit consumed.
@@ -101,11 +118,11 @@ mod tests {
 
     #[test]
     fn text_input() {
-        let text = "event 1\nevent 2\nevent 3\n";
+        let text = b"event 1\nevent 2\r\nevent 3";
 
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
-        let input = text::Input::with_read(data_tx, ack_rx, text.as_bytes());
+        let input = text::Input::with_read(data_tx, ack_rx, text.as_ref());
         let in_thread = thread::spawn(move || input.run().unwrap());
 
         let mut events = Vec::new();
@@ -118,6 +135,6 @@ mod tests {
         }
         in_thread.join().unwrap();
 
-        assert_eq!(events, ["event 1", "event 2", "event 3"]);
+        assert_eq!(events, [b"event 1", b"event 2", b"event 3"]);
     }
 }
