@@ -141,23 +141,26 @@ impl<R: Read> super::Input for Input<R> {
 #[cfg(test)]
 mod tests {
     use crate::{pcap, Input};
-    use pcap_file::{Packet, PcapWriter};
+    use pcap_parser::{LegacyPcapBlock, PcapHeader, ToVec};
     use std::io::Cursor;
     use std::thread;
 
     fn create_pcap() -> Cursor<Vec<u8>> {
-        let buff = Cursor::new(vec![0; 1028]);
-        let mut pcap_writer = PcapWriter::new(buff).unwrap();
         let fake_content = b"fake packet";
-        let pkt = Packet::new(0, 0, fake_content.len() as u32, fake_content);
-        for _ in (0..10).into_iter() {
-            pcap_writer.write_packet(&pkt).unwrap();
+        let pkt = LegacyPcapBlock {
+            ts_sec: 0,
+            ts_usec: 0,
+            caplen: fake_content.len() as u32,
+            origlen: fake_content.len() as u32,
+            data: fake_content,
         }
-        let buff = pcap_writer.into_writer();
-        let len = buff.position() as usize;
-        let mut vec = buff.into_inner();
-        vec.resize(len, 0);
-        Cursor::new(vec)
+        .to_vec_raw()
+        .unwrap();
+        let mut buf = PcapHeader::new().to_vec_raw().unwrap();
+        for _ in (0..10).into_iter() {
+            buf.extend(pkt.iter());
+        }
+        Cursor::new(buf)
     }
 
     #[test]
