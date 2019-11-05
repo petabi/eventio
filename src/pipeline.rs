@@ -8,6 +8,7 @@ pub fn split<D, A, I, O, F, S, R>(
     initialize: I,
     fold: O,
     finalize: F,
+    nthreads: usize,
 ) -> Vec<JoinHandle<R>>
 where
     D: 'static + Send + Event,
@@ -18,10 +19,9 @@ where
     F: 'static + Fn(S) -> R + Copy + Send,
     R: 'static + Send,
 {
-    let split_count = num_cpus::get();
     let mut workers = Vec::new();
     let (rx, tx) = (data_rx, ack_tx);
-    for _ in 0..split_count {
+    for _ in 0..nthreads {
         let rx = rx.clone();
         let tx = tx.clone();
         workers.push(thread::spawn(move || {
@@ -53,7 +53,7 @@ mod tests {
         let input = text::Input::with_read(data_tx, ack_rx, text.as_ref());
         let in_thread = thread::spawn(move || input.run().unwrap());
 
-        let workers = super::split(data_rx, ack_tx, || 0_usize, |sum, _| sum + 1, |x| x);
+        let workers = super::split(data_rx, ack_tx, || 0_usize, |sum, _| sum + 1, |x| x, 2);
         in_thread.join().unwrap();
         assert_eq!(
             workers
