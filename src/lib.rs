@@ -7,8 +7,10 @@
 pub mod fluentd;
 pub mod kafka;
 pub mod pcap;
+mod pipeline;
 pub mod text;
 
+pub use pipeline::split;
 use std::error;
 use std::fmt;
 
