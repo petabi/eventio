@@ -148,25 +148,12 @@ impl super::Input for Input {
                                         // loop and commit consumed.
                                         break 'poll;
                                     };
-                                    if ack.remainder == 0 {
-                                        self.consumer
-                                            .consume_message(
-                                                msgset.topic(),
-                                                ack.partition,
-                                                ack.offset,
-                                            )
-                                            .map_err(|_| {
-                                                Error::Fatal(
-                                                    "messages from Kafka have different topics"
-                                                        .into(),
-                                                )
-                                            })?;
-                                    }
-                                    if self.ack_channel.is_empty() {
-                                        self.consumer
-                                            .commit_consumed()
-                                            .map_err(|e| Error::CannotCommit(Box::new(e)))?;
-                                    }
+                                    handle_ack(
+                                        &self.ack_channel,
+                                        &mut self.consumer,
+                                        msgset.topic(),
+                                        &ack,
+                                    )?;
                                 }
                                 _ => unreachable!(),
                             }
@@ -176,27 +163,32 @@ impl super::Input for Input {
             }
         }
         self.data_channel = None;
-        let topic = self
-            .consumer
-            .subscriptions()
-            .keys()
-            .next()
-            .expect("subscribes to one topic")
-            .clone();
+        let subs = self.consumer.subscriptions();
+        let topic = subs.keys().next().expect("subscribes to one topic");
         for ack in &self.ack_channel {
-            if ack.remainder == 0 {
-                self.consumer
-                    .consume_message(&topic, ack.partition, ack.offset)
-                    .map_err(|_| {
-                        Error::Fatal("messages from Kafka have different topics".into())
-                    })?;
-            }
+            handle_ack(&self.ack_channel, &mut self.consumer, topic, &ack)?;
         }
-        self.consumer
-            .commit_consumed()
-            .map_err(|e| Error::CannotCommit(Box::new(e)))?;
         Ok(())
     }
+}
+
+fn handle_ack(
+    ack_channel: &crossbeam_channel::Receiver<EntryLocation>,
+    consumer: &mut Consumer,
+    topic: &str,
+    ack: &EntryLocation,
+) -> Result<(), Error> {
+    if ack.remainder == 0 {
+        consumer
+            .consume_message(topic, ack.partition, ack.offset)
+            .map_err(|_| Error::Fatal("messages from Kafka have different topics".into()))?;
+    }
+    if ack_channel.is_empty() {
+        consumer
+            .commit_consumed()
+            .map_err(|e| Error::CannotCommit(Box::new(e)))?;
+    }
+    Ok(())
 }
 
 /// Event writer for Apache Kafka.
