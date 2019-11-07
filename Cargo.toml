@@ -17,7 +17,7 @@ exclude = ["/.github"]
 codecov = { repository = "petabi/eventio", service = "github" }
 
 [dependencies]
-crossbeam-channel = "0.3"
+crossbeam-channel = "0.4"
 kafka = "0.8"
 pcap-parser = { version = "0.8", features = ["data", "serialize"] }
 rmp-serde = "0.14"
