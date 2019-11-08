@@ -1,6 +1,6 @@
 //! Reading packets as events from a pcap input.
 
-use crate::Error;
+use crate::{BareEvent, Error};
 use std::io::{self, Read};
 
 use pcap_parser::{
@@ -8,34 +8,11 @@ use pcap_parser::{
     Block, PcapBlockOwned, PcapError,
 };
 
-/// A packet in a pcap input.
-#[derive(Debug)]
-pub struct Event {
-    pub raw: Vec<u8>,
-    pub id: u64,
-}
-
-impl crate::Event for Event {
-    type Ack = u64;
-
-    fn raw(&self) -> &[u8] {
-        self.raw.as_slice()
-    }
-
-    fn time(&self) -> u64 {
-        self.id
-    }
-
-    fn ack(&self) -> Self::Ack {
-        self.id
-    }
-}
-
 const PCAP_BUFFER_SIZE: usize = 65536;
 
 /// Event reader for a pcap input.
 pub struct Input<R: Read> {
-    data_channel: Option<crossbeam_channel::Sender<Event>>,
+    data_channel: Option<crossbeam_channel::Sender<BareEvent>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
     iter: Box<dyn PcapReaderIterator<R>>,
 }
@@ -44,7 +21,7 @@ unsafe impl<R: Read> std::marker::Send for Input<R> {}
 
 impl<R: Read + 'static> Input<R> {
     pub fn with_read(
-        data_channel: crossbeam_channel::Sender<Event>,
+        data_channel: crossbeam_channel::Sender<BareEvent>,
         ack_channel: crossbeam_channel::Receiver<u64>,
         read: R,
     ) -> Self {
@@ -57,7 +34,7 @@ impl<R: Read + 'static> Input<R> {
 }
 
 impl<R: Read> super::Input for Input<R> {
-    type Data = Event;
+    type Data = BareEvent;
     type Ack = u64;
 
     fn run(mut self) -> Result<(), Error> {
@@ -93,9 +70,9 @@ impl<R: Read> super::Input for Input<R> {
                             let oper = sel.select();
                             match oper.index() {
                                 i if i == send_data => {
-                                    let event = Event {
+                                    let event = BareEvent {
                                         raw: eslice.to_vec(),
-                                        id,
+                                        seq_no: id,
                                     };
                                     if oper.send(data_channel, event).is_err() {
                                         // data_channel was disconnected. Exit the
@@ -180,7 +157,7 @@ mod tests {
             let ack_tx = ack_tx;
             for ev in data_rx {
                 events.push(ev.raw);
-                ack_tx.send(ev.id).unwrap();
+                ack_tx.send(ev.seq_no).unwrap();
             }
         }
         in_thread.join().unwrap();

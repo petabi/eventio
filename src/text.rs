@@ -1,42 +1,19 @@
 //! Reading lines as events from a text input.
 
-use crate::Error;
+use crate::{BareEvent, Error};
 use std::io::{BufRead, BufReader, Read};
 use std::mem;
 
-/// A line in a text input.
-#[derive(Debug)]
-pub struct Event {
-    pub raw: Vec<u8>,
-    pub line_no: u64,
-}
-
-impl crate::Event for Event {
-    type Ack = u64;
-
-    fn raw(&self) -> &[u8] {
-        self.raw.as_slice()
-    }
-
-    fn time(&self) -> u64 {
-        self.line_no
-    }
-
-    fn ack(&self) -> Self::Ack {
-        self.line_no
-    }
-}
-
 /// Event reader for a text input.
 pub struct Input<T: Read> {
-    data_channel: Option<crossbeam_channel::Sender<Event>>,
+    data_channel: Option<crossbeam_channel::Sender<BareEvent>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
     buf: BufReader<T>,
 }
 
 impl<T: Read> Input<T> {
     pub fn with_read(
-        data_channel: crossbeam_channel::Sender<Event>,
+        data_channel: crossbeam_channel::Sender<BareEvent>,
         ack_channel: crossbeam_channel::Receiver<u64>,
         read: T,
     ) -> Self {
@@ -49,7 +26,7 @@ impl<T: Read> Input<T> {
 }
 
 impl<T: Read> super::Input for Input<T> {
-    type Data = Event;
+    type Data = BareEvent;
     type Ack = u64;
 
     fn run(mut self) -> Result<(), Error> {
@@ -63,8 +40,9 @@ impl<T: Read> super::Input for Input<T> {
         let send_data = sel.send(data_channel);
         let recv_ack = sel.recv(&self.ack_channel);
         let mut line_no = 0;
-        let mut line = Vec::new();
+
         'poll: loop {
+            let mut line = Vec::new();
             let mut len = self
                 .buf
                 .read_until(b'\n', &mut line)
@@ -86,7 +64,10 @@ impl<T: Read> super::Input for Input<T> {
                     i if i == send_data => {
                         let mut raw = Vec::new();
                         mem::swap(&mut line, &mut raw);
-                        let event = Event { raw, line_no };
+                        let event = BareEvent {
+                            raw,
+                            seq_no: line_no,
+                        };
                         if oper.send(data_channel, event).is_err() {
                             // data_channel was disconnected. Exit the
                             // loop and commit consumed.
@@ -130,7 +111,7 @@ mod tests {
             let ack_tx = ack_tx;
             for ev in data_rx {
                 events.push(ev.raw);
-                ack_tx.send(ev.line_no).unwrap();
+                ack_tx.send(ev.seq_no).unwrap();
             }
         }
         in_thread.join().unwrap();
