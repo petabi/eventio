@@ -33,6 +33,29 @@ pub trait Event {
     fn ack(&self) -> Self::Ack;
 }
 
+/// A line in a text input.
+#[derive(Debug)]
+pub struct BareEvent {
+    pub raw: Vec<u8>,
+    pub seq_no: u64,
+}
+
+impl Event for BareEvent {
+    type Ack = u64;
+
+    fn raw(&self) -> &[u8] {
+        self.raw.as_slice()
+    }
+
+    fn time(&self) -> u64 {
+        self.seq_no
+    }
+
+    fn ack(&self) -> Self::Ack {
+        self.seq_no
+    }
+}
+
 /// The error type for event I/O operations.
 #[derive(Debug)]
 pub enum Error {
