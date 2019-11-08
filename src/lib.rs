@@ -33,7 +33,6 @@ pub trait Event {
     fn ack(&self) -> Self::Ack;
 }
 
-/// A line in a text input.
 #[derive(Debug)]
 pub struct BareEvent {
     pub raw: Vec<u8>,

@@ -2,7 +2,6 @@
 
 use crate::{BareEvent, Error};
 use std::io::{BufRead, BufReader, Read};
-use std::mem;
 
 pub type Event = BareEvent;
 
@@ -64,10 +63,8 @@ impl<T: Read> super::Input for Input<T> {
                 let oper = sel.select();
                 match oper.index() {
                     i if i == send_data => {
-                        let mut raw = Vec::new();
-                        mem::swap(&mut line, &mut raw);
                         let event = Event {
-                            raw,
+                            raw: line,
                             seq_no: line_no,
                         };
                         if oper.send(data_channel, event).is_err() {
