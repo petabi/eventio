@@ -19,6 +19,7 @@ codecov = { repository = "petabi/eventio", service = "github" }
 [dependencies]
 crossbeam-channel = "0.4"
 kafka = "0.8"
+nom = "5"
 pcap-parser = { version = "0.8", features = ["data", "serialize"] }
 rmp-serde = "0.14"
 serde = { version = "1", features = ["derive"] }
