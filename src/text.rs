@@ -4,16 +4,18 @@ use crate::{BareEvent, Error};
 use std::io::{BufRead, BufReader, Read};
 use std::mem;
 
+pub type Event = BareEvent;
+
 /// Event reader for a text input.
 pub struct Input<T: Read> {
-    data_channel: Option<crossbeam_channel::Sender<BareEvent>>,
+    data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
     buf: BufReader<T>,
 }
 
 impl<T: Read> Input<T> {
     pub fn with_read(
-        data_channel: crossbeam_channel::Sender<BareEvent>,
+        data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<u64>,
         read: T,
     ) -> Self {
@@ -26,7 +28,7 @@ impl<T: Read> Input<T> {
 }
 
 impl<T: Read> super::Input for Input<T> {
-    type Data = BareEvent;
+    type Data = Event;
     type Ack = u64;
 
     fn run(mut self) -> Result<(), Error> {
@@ -64,7 +66,7 @@ impl<T: Read> super::Input for Input<T> {
                     i if i == send_data => {
                         let mut raw = Vec::new();
                         mem::swap(&mut line, &mut raw);
-                        let event = BareEvent {
+                        let event = Event {
                             raw,
                             seq_no: line_no,
                         };
