@@ -4,7 +4,7 @@ use std::io::{self, BufRead, BufReader, Read};
 
 pub type Event = BareEvent;
 
-/// Event reader for a text input.
+/// Event reader for a mbox input.
 pub struct Input<T: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
