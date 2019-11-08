@@ -6,6 +6,7 @@
 
 pub mod fluentd;
 pub mod kafka;
+pub mod mbox;
 pub mod pcap;
 mod pipeline;
 pub mod text;
