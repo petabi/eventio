@@ -113,3 +113,65 @@ impl<T: Read> super::Input for Input<T> {
 fn mbox_magic(input: &[u8]) -> IResult<&[u8], &[u8]> {
     tag(b"From ")(input)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Input;
+    use std::io::Cursor;
+    use std::thread;
+
+    fn read_emails(text: &'static [u8]) -> Result<Vec<super::Event>, super::Error> {
+        let (data_tx, data_rx) = crossbeam_channel::bounded(1);
+        let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
+        let cursor: Cursor<&[u8]> = Cursor::new(text);
+
+        let input = super::Input::with_read(data_tx, ack_rx, cursor)?;
+        let in_thread = thread::spawn(move || input.run().unwrap());
+
+        let mut events = Vec::new();
+        {
+            let ack_tx = ack_tx;
+            for ev in data_rx {
+                ack_tx.send(ev.seq_no).unwrap();
+                events.push(ev);
+            }
+        }
+        in_thread.join().unwrap();
+
+        Ok(events)
+    }
+
+    #[test]
+    fn empty() {
+        let text = b"";
+        assert!(read_emails(text).is_err());
+    }
+
+    #[test]
+    fn end_of_email() {
+        let text = b"From \r\n\r\n";
+        let events = read_emails(text).unwrap();
+        assert_eq!(events.len(), 1);
+    }
+
+    #[test]
+    fn not_corrupted() {
+        let text = b"From valid \n\nFor...\n";
+
+        let events = read_emails(text).unwrap();
+        assert_eq!(events.len(), 1);
+    }
+
+    #[test]
+    fn corrupted() {
+        let text = b"Fr something else\r\nFrom \r\n\r\n";
+        assert!(read_emails(text).is_err());
+    }
+
+    #[test]
+    fn two_emails() {
+        let text = b"From \r\n\r\nFrom \r\n\r\n";
+        let res = read_emails(text).unwrap();
+        assert_eq!(res.len(), 2);
+    }
+}
