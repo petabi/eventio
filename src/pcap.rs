@@ -8,11 +8,12 @@ use pcap_parser::{
     Block, PcapBlockOwned, PcapError,
 };
 
+pub type Event = BareEvent;
 const PCAP_BUFFER_SIZE: usize = 65536;
 
 /// Event reader for a pcap input.
 pub struct Input<R: Read> {
-    data_channel: Option<crossbeam_channel::Sender<BareEvent>>,
+    data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
     iter: Box<dyn PcapReaderIterator<R>>,
 }
@@ -21,7 +22,7 @@ unsafe impl<R: Read> std::marker::Send for Input<R> {}
 
 impl<R: Read + 'static> Input<R> {
     pub fn with_read(
-        data_channel: crossbeam_channel::Sender<BareEvent>,
+        data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<u64>,
         read: R,
     ) -> Self {
@@ -34,7 +35,7 @@ impl<R: Read + 'static> Input<R> {
 }
 
 impl<R: Read> super::Input for Input<R> {
-    type Data = BareEvent;
+    type Data = Event;
     type Ack = u64;
 
     fn run(mut self) -> Result<(), Error> {
@@ -70,7 +71,7 @@ impl<R: Read> super::Input for Input<R> {
                             let oper = sel.select();
                             match oper.index() {
                                 i if i == send_data => {
-                                    let event = BareEvent {
+                                    let event = Event {
                                         raw: eslice.to_vec(),
                                         seq_no: id,
                                     };
