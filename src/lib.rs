@@ -43,14 +43,17 @@ pub struct BareEvent {
 impl Event for BareEvent {
     type Ack = u64;
 
+    #[must_use]
     fn raw(&self) -> &[u8] {
         self.raw.as_slice()
     }
 
+    #[must_use]
     fn time(&self) -> u64 {
         self.seq_no
     }
 
+    #[must_use]
     fn ack(&self) -> Self::Ack {
         self.seq_no
     }
@@ -74,6 +77,7 @@ pub enum Error {
 }
 
 impl error::Error for Error {
+    #[must_use]
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Self::CannotCommit(e) | Self::CannotFetch(e) | Self::InvalidMessage(e) => {
