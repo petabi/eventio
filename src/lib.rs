@@ -34,6 +34,7 @@ pub trait Event {
     fn ack(&self) -> Self::Ack;
 }
 
+/// A raw event as a byte sequence.
 #[derive(Debug)]
 pub struct BareEvent {
     pub raw: Vec<u8>,

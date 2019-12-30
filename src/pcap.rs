@@ -8,6 +8,7 @@ use pcap_parser::{
     Block, PcapBlockOwned, PcapError,
 };
 
+/// A packet as a byte sequence;
 pub type Event = BareEvent;
 const PCAP_BUFFER_SIZE: usize = 65536;
 

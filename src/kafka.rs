@@ -37,6 +37,7 @@ impl crate::Event for Event {
     }
 }
 
+/// The location of an event on a Kafka topic.
 #[derive(Copy, Clone, Debug)]
 pub struct EntryLocation {
     remainder: u32, // # of entries in the message after this entry

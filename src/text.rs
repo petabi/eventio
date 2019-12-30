@@ -3,6 +3,7 @@
 use crate::{BareEvent, Error};
 use std::io::{BufRead, BufReader, Read};
 
+/// A single line as a byte sequence.
 pub type Event = BareEvent;
 
 /// Event reader for a text input.

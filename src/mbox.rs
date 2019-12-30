@@ -1,7 +1,10 @@
+//! Reading emails as events from an mbox.
+
 use crate::{BareEvent, Error};
 use nom::{bytes::complete::tag, IResult};
 use std::io::{self, BufRead, BufReader, Read};
 
+/// An email as a byte sequence.
 pub type Event = BareEvent;
 
 /// Event reader for a mbox input.
