@@ -56,6 +56,10 @@ pub struct Input {
 impl Input {
     /// Creates `Input` that fetches at most `fetch_limit` entries from the
     /// given Kafka topic.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if it fails to connect to Kafka as a consumer.
     pub fn new(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<EntryLocation>,
@@ -86,6 +90,12 @@ impl super::Input for Input {
     type Data = Event;
     type Ack = EntryLocation;
 
+    /// Reads events from Kafak and forwards them through `data_channel`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if it cannot fetch messages from Kafka, receives an
+    /// invalid message, or receives an invalid ACK from `ack_channel`.
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
@@ -206,6 +216,11 @@ impl<T> Output<T>
 where
     T: std::fmt::Debug + Into<ForwardMode> + Serialize,
 {
+    /// Creates an event writer for Apache Kafka.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if it fails to connect to Kafka as a consumer.
     pub fn new(
         data_channel: crossbeam_channel::Receiver<T>,
         hosts: Vec<String>,
@@ -221,6 +236,11 @@ where
         })
     }
 
+    /// Sends messages received through `data_channel` to Kafka.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if message serialization or transmission fails.
     pub fn run(&mut self) -> Result<(), kafka::Error> {
         let mut buf = Vec::new();
         for msg in self.data_channel.iter() {
