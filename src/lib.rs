@@ -22,6 +22,11 @@ pub trait Input {
 
     /// Fetches events and send them as `Data`. It also receives and processes
     /// `Ack`, which acknowledges the receipt of a certain `Data`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if it fails to fetch events, or receives an invalid
+    /// `Data` or `Ack`.
     fn run(self) -> Result<(), Error>;
 }
 

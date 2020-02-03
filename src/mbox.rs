@@ -15,6 +15,11 @@ pub struct Input<T: Read> {
 }
 
 impl<T: Read> Input<T> {
+    /// Creates `Input` that reads emails from mbox.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `read` is not a valid mbox.
     pub fn with_read(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<u64>,
@@ -70,6 +75,11 @@ impl<T: Read> super::Input for Input<T> {
     type Data = Event;
     type Ack = u64;
 
+    /// Reads emails from mbox and forwards them through `data_channel`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if reading an email from mbox fails.
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
             channel
