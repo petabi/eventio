@@ -2,9 +2,10 @@
 name = "eventio"
 version = "0.3.5"
 description = "A collection of event I/O processors for event-processing applications."
+readme = "README.md"
+documentation = "https://docs.rs/eventio"
 homepage = "https://github.com/petabi/eventio"
 repository = "https://github.com/petabi/eventio"
-documentation = "https://docs.rs/eventio"
 license = "Apache-2.0"
 authors = [
     "Min Kim <msk@dolbo.net>",
