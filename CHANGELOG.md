@@ -5,13 +5,14 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2020-10-12
 
 ### Changed
 
 - Requires Rust 1.38 or higher.
+- Updated pcap-parser to 0.9 and crossbeam-chaneel to 0.5.
 
-## [0.3.5] - 2019-02-03
+## [0.3.5] - 2020-02-03
 
 - Updated documentation.
 
@@ -67,7 +68,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
-[Unreleased]: https://github.com/petabi/eventio/compare/0.3.5...master
+[0.4.0]: https://github.com/petabi/eventio/compare/0.3.5...0.4.0
 [0.3.5]: https://github.com/petabi/eventio/compare/0.3.4...0.3.5
 [0.3.4]: https://github.com/petabi/eventio/compare/0.3.3...0.3.4
 [0.3.3]: https://github.com/petabi/eventio/compare/0.3.2...0.3.3
