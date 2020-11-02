@@ -11,7 +11,7 @@ to send them to storage or other event processors.
 
 ## Requirements
 
-* Rust ≥ 1.38
+* Rust ≥ 1.44
 * OpenSSL ≥ 1.0.1 or LibreSSL ≥ 2.5
 
 ## License

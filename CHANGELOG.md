@@ -5,6 +5,13 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2020-11-02
+
+### Changed
+
+- Requires Rust 1.44 or higher.
+- Updated nom to 6.
+
 ## [0.4.0] - 2020-10-12
 
 ### Changed
@@ -68,6 +75,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
+[0.5.0]: https://github.com/petabi/eventio/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/petabi/eventio/compare/0.3.5...0.4.0
 [0.3.5]: https://github.com/petabi/eventio/compare/0.3.4...0.3.5
 [0.3.4]: https://github.com/petabi/eventio/compare/0.3.3...0.3.4
