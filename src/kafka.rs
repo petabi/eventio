@@ -195,7 +195,9 @@ fn handle_ack(
     if ack.remainder == 0 {
         consumer
             .consume_message(topic, ack.partition, ack.offset)
-            .map_err(|_| Error::Fatal("messages from Kafka have different topics".into()))?;
+            .map_err(|e| {
+                Error::Fatal(format!("messages from Kafka have different topics: {}", e))
+            })?;
     }
     if ack_channel.is_empty() {
         consumer
