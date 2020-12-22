@@ -19,7 +19,7 @@ pub struct Input<R: Read> {
     iter: Box<dyn PcapReaderIterator<R>>,
 }
 
-unsafe impl<R: Read> std::marker::Send for Input<R> {}
+unsafe impl<R: Read + Send> Send for Input<R> {}
 
 impl<R: Read + 'static> Input<R> {
     pub fn with_read(
