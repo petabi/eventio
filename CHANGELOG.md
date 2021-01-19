@@ -5,6 +5,12 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2021-01-19
+
+### Fixed
+
+- Require `Send` explicitly for `Input` to avoid possible data racing 
+
 ## [0.5.0] - 2020-11-02
 
 ### Changed
@@ -75,6 +81,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
+[0.5.1]: https://github.com/petabi/eventio/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/petabi/eventio/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/petabi/eventio/compare/0.3.5...0.4.0
 [0.3.5]: https://github.com/petabi/eventio/compare/0.3.4...0.3.5
