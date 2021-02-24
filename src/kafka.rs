@@ -127,9 +127,8 @@ impl super::Input for Input {
                         self.fetch_limit.overflowing_sub(fwd_msg.entries.len());
                     if overflow {
                         break 'poll;
-                    } else {
-                        self.fetch_limit = remaining;
                     }
+                    self.fetch_limit = remaining;
                     let offset = msg.offset;
                     for (remainder, entry) in (0..fwd_msg.entries.len()).rev().zip(fwd_msg.entries)
                     {
