@@ -65,9 +65,8 @@ fn read_email<T: Read>(reader: &mut BufReader<T>) -> Result<Option<Vec<u8>>, Err
         if mbox_magic(&buf[cur..]).is_ok() {
             buf.resize(cur, 0);
             return Ok(Some(buf));
-        } else {
-            cur += bytes;
         }
+        cur += bytes;
     }
 }
 
