@@ -13,16 +13,16 @@ pub type Event = BareEvent;
 const PCAP_BUFFER_SIZE: usize = 65536;
 
 /// Event reader for a pcap input.
-pub struct Input<R: Read> {
+pub struct Input {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
     ack_channel: crossbeam_channel::Receiver<u64>,
-    iter: Box<dyn PcapReaderIterator<R>>,
+    iter: Box<dyn PcapReaderIterator>,
 }
 
-unsafe impl<R: Read + Send> Send for Input<R> {}
+unsafe impl Send for Input {}
 
-impl<R: Read + 'static> Input<R> {
-    pub fn with_read(
+impl Input {
+    pub fn with_read<R: Read + 'static>(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<u64>,
         read: R,
@@ -35,7 +35,7 @@ impl<R: Read + 'static> Input<R> {
     }
 }
 
-impl<R: Read> super::Input for Input<R> {
+impl super::Input for Input {
     type Data = Event;
     type Ack = u64;
 
