@@ -45,20 +45,21 @@ impl<T: Read> super::Input for Input<T> {
 
         'poll: loop {
             let mut line = Vec::new();
-            let mut len = self
-                .buf
+            self.buf
                 .read_until(b'\n', &mut line)
                 .map_err(|e| Error::CannotFetch(Box::new(e)))?;
-            if len == 0 {
+            if let Some(&b) = line.last() {
+                if b == b'\n' {
+                    line.pop();
+                    if let Some(&b) = line.last() {
+                        if b == b'\r' {
+                            line.pop();
+                        }
+                    }
+                }
+            } else {
                 break;
             }
-            if line[len - 1] == b'\n' {
-                len -= 1;
-                if len > 0 && line[len - 1] == b'\r' {
-                    len -= 1;
-                }
-            }
-            line.truncate(len);
             line_no += 1;
             loop {
                 let oper = sel.select();
