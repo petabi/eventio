@@ -1,6 +1,6 @@
 [package]
 name = "eventio"
-version = "0.5.1"
+version = "0.6.0"
 description = "A collection of event I/O processors for event-processing applications."
 readme = "README.md"
 documentation = "https://docs.rs/eventio"
