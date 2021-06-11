@@ -9,10 +9,9 @@ to send them to storage or other event processors.
 [![Documentation](https://docs.rs/eventio/badge.svg)](https://docs.rs/eventio)
 [![Coverage Status](https://codecov.io/gh/petabi/eventio/branch/master/graphs/badge.svg)](https://codecov.io/gh/petabi/eventio)
 
-## Requirements
+## Minimum Supported Rust Version
 
-* Rust ≥ 1.44
-* OpenSSL ≥ 1.0.1 or LibreSSL ≥ 2.5
+This crate is guaranteed to compile on Rust 1.44 and later.
 
 ## License
 
