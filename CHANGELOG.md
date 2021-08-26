@@ -5,6 +5,13 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2021-08-26
+
+### Changes
+
+- `split` requires `Clone`, rather than `Copy` for `initialize`, `fold`, and
+  `finalize`.
+
 ## [0.6.0] - 2021-06-10
 
 ### Changed
@@ -88,6 +95,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
+[0.6.1]: https://github.com/petabi/eventio/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/petabi/eventio/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/petabi/eventio/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/petabi/eventio/compare/0.4.0...0.5.0

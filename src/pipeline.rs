@@ -14,9 +14,9 @@ where
     D: 'static + Send + Event,
     <D as Event>::Ack: Into<A>,
     A: 'static + Send,
-    I: 'static + Fn() -> S + Copy + Send,
-    O: 'static + Fn(S, &D) -> S + Copy + Send,
-    F: 'static + Fn(S) -> R + Copy + Send,
+    I: 'static + Fn() -> S + Clone + Send,
+    O: 'static + Fn(S, &D) -> S + Clone + Send,
+    F: 'static + Fn(S) -> R + Clone + Send,
     R: 'static + Send,
 {
     let mut workers = Vec::new();
@@ -24,6 +24,9 @@ where
     for _ in 0..nthreads {
         let rx = rx.clone();
         let tx = tx.clone();
+        let initialize = initialize.clone();
+        let fold = fold.clone();
+        let finalize = finalize.clone();
         workers.push(thread::spawn(move || {
             let mut s = initialize();
             while let Ok(ev) = rx.recv() {
