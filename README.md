@@ -11,7 +11,7 @@ to send them to storage or other event processors.
 
 ## Minimum Supported Rust Version
 
-This crate is guaranteed to compile on Rust 1.44 and later.
+This crate is guaranteed to compile on Rust 1.48 and later.
 
 ## License
 
