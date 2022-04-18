@@ -9,13 +9,9 @@ to send them to storage or other event processors.
 [![Documentation](https://docs.rs/eventio/badge.svg)](https://docs.rs/eventio)
 [![Coverage Status](https://codecov.io/gh/petabi/eventio/branch/master/graphs/badge.svg)](https://codecov.io/gh/petabi/eventio)
 
-## Minimum Supported Rust Version
-
-This crate is guaranteed to compile on Rust 1.48 and later.
-
 ## License
 
-Copyright 2019-2021 Petabi, Inc.
+Copyright 2019-2022 Petabi, Inc.
 
 Licensed under [Apache License, Version 2.0][apache-license] (the "License");
 you may not use this crate except in compliance with the License.

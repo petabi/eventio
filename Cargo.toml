@@ -12,6 +12,7 @@ authors = [
     "Min Shao <min.shao1988@gmail.com>"
 ]
 edition = "2018"
+rust-version = "1.53"
 exclude = ["/.github"]
 
 [badges]
@@ -22,6 +23,6 @@ crossbeam-channel = "0.5"
 kafka = { version = "0.8", default-features = false }
 nom = "7"
 pcap-parser = { version = "0.13", features = ["data", "serialize"] }
-rmp-serde = "0.15"
+rmp-serde = "1"
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
