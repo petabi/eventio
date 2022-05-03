@@ -1,18 +1,18 @@
 [package]
 name = "eventio"
 version = "0.6.1"
-description = "A collection of event I/O processors for event-processing applications."
-readme = "README.md"
-documentation = "https://docs.rs/eventio"
-homepage = "https://github.com/petabi/eventio"
-repository = "https://github.com/petabi/eventio"
-license = "Apache-2.0"
 authors = [
     "Min Kim <msk@dolbo.net>",
     "Min Shao <min.shao1988@gmail.com>"
 ]
-edition = "2018"
-rust-version = "1.53"
+edition = "2021"
+rust-version = "1.56"
+description = "A collection of event I/O processors for event-processing applications."
+documentation = "https://docs.rs/eventio"
+readme = "README.md"
+homepage = "https://github.com/petabi/eventio"
+repository = "https://github.com/petabi/eventio"
+license = "Apache-2.0"
 exclude = ["/.github"]
 
 [badges]
@@ -20,7 +20,7 @@ codecov = { repository = "petabi/eventio", service = "github" }
 
 [dependencies]
 crossbeam-channel = "0.5"
-kafka = { version = "0.8", default-features = false }
+kafka = { version = "0.9", default-features = false }
 nom = "7"
 pcap-parser = { version = "0.13", features = ["data", "serialize"] }
 rmp-serde = "1"

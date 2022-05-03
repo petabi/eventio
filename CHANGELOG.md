@@ -7,7 +7,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- The minimum version of Rust required is now 1.53.0.
+### Changed
+
+- The minimum version of Rust required is now 1.56.
+- kafka has been updated to 0.9.
 
 ## [0.6.1] - 2021-08-26
 

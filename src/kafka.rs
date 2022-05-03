@@ -7,6 +7,7 @@ use kafka::producer::{Producer, Record, RequiredAcks};
 use rmp_serde::Serializer;
 use serde::Serialize;
 use std::convert::TryInto;
+use std::io;
 
 /// An event included in a Kafka message at `loc`.
 #[derive(Debug)]
@@ -245,12 +246,8 @@ where
     pub fn run(&mut self) -> Result<(), kafka::Error> {
         let mut buf = Vec::new();
         for msg in self.data_channel.iter() {
-            msg.serialize(&mut Serializer::new(&mut buf)).map_err(|e| {
-                kafka::Error::from_kind(kafka::error::ErrorKind::Msg(format!(
-                    "cannot serialize: {}",
-                    e
-                )))
-            })?;
+            msg.serialize(&mut Serializer::new(&mut buf))
+                .map_err(|e| kafka::Error::Io(io::Error::new(io::ErrorKind::InvalidData, e)))?;
             self.producer
                 .send(&Record::from_value(&self.topic, buf.as_slice()))?;
             buf.clear();
