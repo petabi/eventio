@@ -11,6 +11,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - The minimum version of Rust required is now 1.56.
 - kafka has been updated to 0.9.
+- `ndarray::Input` can handle `Array2<Vec<u8>>`.
 
 ## [0.6.1] - 2021-08-26
 
