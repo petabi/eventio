@@ -18,10 +18,14 @@ exclude = ["/.github"]
 [badges]
 codecov = { repository = "petabi/eventio", service = "github" }
 
+[features]
+default = []
+matrix = ["ndarray"]
+
 [dependencies]
 crossbeam-channel = "0.5"
 kafka = { version = "0.9", default-features = false }
-ndarray = "0.15"
+ndarray = { version = "0.15", optional = true }
 nom = "7"
 pcap-parser = { version = "0.14", features = ["data", "serialize"] }
 rmp-serde = "1"

@@ -7,6 +7,7 @@
 pub mod fluentd;
 pub mod kafka;
 pub mod mbox;
+#[cfg(feature = "matrix")]
 pub mod ndarray;
 pub mod pcap;
 mod pipeline;
