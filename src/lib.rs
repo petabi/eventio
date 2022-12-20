@@ -8,7 +8,7 @@ pub mod fluentd;
 #[cfg(feature = "kafka")]
 pub mod kafka;
 pub mod mbox;
-#[cfg(feature = "matrix")]
+#[cfg(feature = "ndarray")]
 pub mod ndarray;
 #[cfg(feature = "pcap")]
 pub mod pcap;

@@ -12,6 +12,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Add `kafka` and `pcap` features to allow for conditionally compilation.
 - Requires Rust 1.60.0 or later.
 
+### Changed
+
+- `matrix` feature is renamed to `ndarray`.
+
 ## [0.7.0] - 2022-07-28
 
 ### Changed
