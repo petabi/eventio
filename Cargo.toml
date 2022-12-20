@@ -1,10 +1,7 @@
 [package]
 name = "eventio"
-version = "0.7.0"
-authors = [
-    "Min Kim <msk@dolbo.net>",
-    "Min Shao <min.shao1988@gmail.com>"
-]
+version = "0.8.0-alpha.1"
+authors = ["Min Kim <msk@dolbo.net>", "Min Shao <min.shao1988@gmail.com>"]
 edition = "2021"
 rust-version = "1.56"
 description = "A collection of event I/O processors for event-processing applications."
@@ -21,13 +18,22 @@ codecov = { repository = "petabi/eventio", service = "github" }
 [features]
 default = []
 matrix = ["ndarray"]
+kafka = ["dep:kafka"]
+pcap = ["pcap-parser"]
 
 [dependencies]
 crossbeam-channel = "0.5"
-kafka = { version = "0.9", default-features = false }
+kafka = { version = "0.9", default-features = false, optional = true }
 ndarray = { version = "0.15", optional = true }
 nom = "7"
-pcap-parser = { version = "0.14", features = ["data", "serialize"] }
+pcap-parser = { version = "0.14", features = [
+    "data",
+    "serialize",
+], optional = true }
 rmp-serde = "1"
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
+
+[[example]]
+name = "kafka"
+required-features = ["kafka"]

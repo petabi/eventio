@@ -5,10 +5,12 @@
 //! them to send to Kafka.
 
 pub mod fluentd;
+#[cfg(feature = "kafka")]
 pub mod kafka;
 pub mod mbox;
 #[cfg(feature = "matrix")]
 pub mod ndarray;
+#[cfg(feature = "pcap")]
 pub mod pcap;
 mod pipeline;
 pub mod text;
