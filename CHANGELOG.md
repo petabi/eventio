@@ -5,6 +5,13 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add `kafka` and `pcap` features to allow for conditionally compilation.
+- Requires Rust 1.60.0 or later.
+
 ## [0.7.0] - 2022-07-28
 
 ### Changed
@@ -15,7 +22,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.6.1] - 2021-08-26
 
-### Changes
+### Changed
 
 - `split` requires `Clone`, rather than `Copy` for `initialize`, `fold`, and
   `finalize`.
@@ -31,7 +38,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Require `Send` explicitly for `Input` to avoid possible data racing 
+- Require `Send` explicitly for `Input` to avoid possible data racing
 
 ## [0.5.0] - 2020-11-02
 
@@ -103,6 +110,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
+[Unreleased]: https://github.com/petabi/eventio/compare/0.7.0...main
 [0.7.0]: https://github.com/petabi/eventio/compare/0.6.1...0.7.0
 [0.6.1]: https://github.com/petabi/eventio/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/petabi/eventio/compare/0.5.1...0.6.0
