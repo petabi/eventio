@@ -102,14 +102,13 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ChannelClosed => write!(f, "data channel closed"),
-            Self::CannotCommit(e) => write!(f, "cannot commit to Kafka: {}", e),
-            Self::CannotFetch(e) => write!(f, "cannot fetch message from Kafka: {}", e),
-            Self::InvalidMessage(e) => write!(f, "invalid MessagePack format: {}", e),
-            Self::Fatal(s) => write!(f, "fatal error: {}", s),
+            Self::CannotCommit(e) => write!(f, "cannot commit to Kafka: {e}"),
+            Self::CannotFetch(e) => write!(f, "cannot fetch message from Kafka: {e}"),
+            Self::InvalidMessage(e) => write!(f, "invalid MessagePack format: {e}"),
+            Self::Fatal(s) => write!(f, "fatal error: {s}"),
             Self::TooManyEvents(n) => write!(
                 f,
-                "cannot handle {} events (expected < {})",
-                n,
+                "cannot handle {n} events (expected < {})",
                 u32::max_value()
             ),
         }
