@@ -101,14 +101,14 @@ impl super::Input for Input {
                     self.iter.refill().map_err(|e| {
                         Error::CannotFetch(Box::new(io::Error::new(
                             io::ErrorKind::Other,
-                            format!("cannot read packet from pcap: {:?}", e),
+                            format!("cannot read packet from pcap: {e:?}"),
                         )))
                     })?;
                 }
                 Err(e) => {
                     return Err(Error::CannotFetch(Box::new(io::Error::new(
                         io::ErrorKind::Other,
-                        format!("cannot read packet from pcap: {:?}", e),
+                        format!("cannot read packet from pcap: {e:?}"),
                     ))));
                 }
             }
