@@ -9,8 +9,8 @@ pub type Event = BareEvent;
 
 pub struct Input {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
-    ack_channel: crossbeam_channel::Receiver<u64>,
-    ids: HashMap<usize, u64>,
+    ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+    ids: HashMap<usize, super::Timestamp>,
     data: Array2<Vec<u8>>,
 }
 
@@ -18,9 +18,9 @@ impl Input {
     #[must_use]
     pub fn new(
         data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<u64>,
+        ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
         data: Array2<Vec<u8>>,
-        ids: HashMap<usize, u64>,
+        ids: HashMap<usize, super::Timestamp>,
     ) -> Self {
         Input {
             data_channel: Some(data_channel),
@@ -33,7 +33,7 @@ impl Input {
 
 impl super::Input for Input {
     type Data = Event;
-    type Ack = u64;
+    type Ack = super::Timestamp;
 
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
@@ -102,7 +102,7 @@ mod tests {
             ],
         ]);
 
-        let ids: HashMap<usize, u64> = [(0, 7), (1, 6), (2, 9)].into_iter().collect();
+        let ids: HashMap<usize, crate::Timestamp> = [(0, 7), (1, 6), (2, 9)].into_iter().collect();
 
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);

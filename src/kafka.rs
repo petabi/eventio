@@ -28,8 +28,8 @@ impl crate::Event for Event {
     }
 
     #[must_use]
-    fn time(&self) -> u64 {
-        self.entry.time
+    fn time(&self) -> super::Timestamp {
+        i64::from_ne_bytes(self.entry.time.to_ne_bytes())
     }
 
     #[must_use]
