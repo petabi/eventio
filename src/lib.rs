@@ -34,14 +34,14 @@ pub trait Input {
     fn run(self) -> Result<(), Error>;
 }
 
-pub type Timestamp = i64;
+pub type SeqNo = usize;
 
 /// A trait for a single event from any type of data source.
 pub trait Event {
     type Ack;
 
     fn raw(&self) -> &[u8];
-    fn time(&self) -> Timestamp;
+    fn time(&self) -> SeqNo;
     fn ack(&self) -> Self::Ack;
 }
 
@@ -49,11 +49,11 @@ pub trait Event {
 #[derive(Debug)]
 pub struct BareEvent {
     pub raw: Vec<u8>,
-    pub seq_no: Timestamp,
+    pub seq_no: SeqNo,
 }
 
 impl Event for BareEvent {
-    type Ack = Timestamp;
+    type Ack = SeqNo;
 
     #[must_use]
     fn raw(&self) -> &[u8] {
@@ -61,7 +61,7 @@ impl Event for BareEvent {
     }
 
     #[must_use]
-    fn time(&self) -> Timestamp {
+    fn time(&self) -> SeqNo {
         self.seq_no
     }
 

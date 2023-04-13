@@ -10,7 +10,7 @@ pub type Event = BareEvent;
 /// Event reader for a mbox input.
 pub struct Input<T: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
-    ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+    ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
     buf: BufReader<T>,
 }
 
@@ -22,7 +22,7 @@ impl<T: Read> Input<T> {
     /// Returns an error if `read` is not a valid mbox.
     pub fn with_read(
         data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+        ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
         read: T,
     ) -> Result<Self, Error> {
         let mut buf = BufReader::new(read);
@@ -72,7 +72,7 @@ fn read_email<T: Read>(reader: &mut BufReader<T>) -> Result<Option<Vec<u8>>, Err
 
 impl<T: Read> super::Input for Input<T> {
     type Data = Event;
-    type Ack = super::Timestamp;
+    type Ack = super::SeqNo;
 
     /// Reads emails from mbox and forwards them through `data_channel`.
     ///

@@ -9,14 +9,14 @@ pub type Event = BareEvent;
 /// Event reader for a text input.
 pub struct Input<T: Read> {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
-    ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+    ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
     buf: BufReader<T>,
 }
 
 impl<T: Read> Input<T> {
     pub fn with_read(
         data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+        ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
         read: T,
     ) -> Self {
         Self {
@@ -29,7 +29,7 @@ impl<T: Read> Input<T> {
 
 impl<T: Read> super::Input for Input<T> {
     type Data = Event;
-    type Ack = super::Timestamp;
+    type Ack = super::SeqNo;
 
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
