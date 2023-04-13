@@ -1,16 +1,14 @@
 //! assembling events from matrix
 
 use crate::{BareEvent, Error};
-use ndarray::Array2;
-use std::collections::HashMap;
+use ndarray::{Array2, Axis};
 
 /// A single line as a byte sequence.
 pub type Event = BareEvent;
 
 pub struct Input {
     data_channel: Option<crossbeam_channel::Sender<Event>>,
-    ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
-    ids: HashMap<usize, super::Timestamp>,
+    ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
     data: Array2<Vec<u8>>,
 }
 
@@ -18,14 +16,12 @@ impl Input {
     #[must_use]
     pub fn new(
         data_channel: crossbeam_channel::Sender<Event>,
-        ack_channel: crossbeam_channel::Receiver<super::Timestamp>,
+        ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
         data: Array2<Vec<u8>>,
-        ids: HashMap<usize, super::Timestamp>,
     ) -> Self {
         Input {
             data_channel: Some(data_channel),
             ack_channel,
-            ids,
             data,
         }
     }
@@ -33,7 +29,7 @@ impl Input {
 
 impl super::Input for Input {
     type Data = Event;
-    type Ack = super::Timestamp;
+    type Ack = super::SeqNo;
 
     fn run(mut self) -> Result<(), Error> {
         let data_channel = if let Some(channel) = &self.data_channel {
@@ -45,19 +41,19 @@ impl super::Input for Input {
         let send_data = sel.send(data_channel);
         let recv_ack = sel.recv(&self.ack_channel);
 
-        'poll: for (idx, id) in self.ids {
-            let row = self.data.row(idx);
+        'poll: for (idx, row) in self.data.axis_iter(Axis(0)).enumerate() {
             let line = row.fold(Vec::new(), |mut line, col| {
                 line.extend_from_slice(col);
                 line
             });
+            dbg!(idx, line.len());
             loop {
                 let oper = sel.select();
                 match oper.index() {
                     i if i == send_data => {
                         let event = Event {
                             raw: line,
-                            seq_no: id,
+                            seq_no: idx,
                         };
                         if oper.send(data_channel, event).is_err() {
                             break 'poll;
@@ -102,11 +98,11 @@ mod tests {
             ],
         ]);
 
-        let ids: HashMap<usize, crate::Timestamp> = [(0, 7), (1, 6), (2, 9)].into_iter().collect();
+        let ids: HashMap<usize, crate::SeqNo> = [(0, 7), (1, 6), (2, 9)].into_iter().collect();
 
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
-        let input = ndarray_input::new(data_tx, ack_rx, data, ids);
+        let input = ndarray_input::new(data_tx, ack_rx, data);
         let in_thread = thread::spawn(move || input.run().unwrap());
 
         let mut events = Vec::new();
@@ -120,7 +116,7 @@ mod tests {
         }
         in_thread.join().unwrap();
 
-        events.sort_unstable_by_key(|e| e.seq_no);
+        events.sort_unstable_by_key(|e| ids.get(&e.seq_no).unwrap());
         let raw: Vec<_> = events.into_iter().map(|e| e.raw).collect();
 
         assert_eq!(
