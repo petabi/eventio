@@ -46,7 +46,6 @@ impl super::Input for Input {
                 line.extend_from_slice(col);
                 line
             });
-            dbg!(idx, line.len());
             loop {
                 let oper = sel.select();
                 match oper.index() {
