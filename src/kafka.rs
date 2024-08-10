@@ -98,9 +98,7 @@ impl super::Input for Input {
     /// Returns an error if it cannot fetch messages from Kafka, receives an
     /// invalid message, or receives an invalid ACK from `ack_channel`.
     fn run(mut self) -> Result<(), Error> {
-        let data_channel = if let Some(channel) = &self.data_channel {
-            channel
-        } else {
+        let Some(data_channel) = &self.data_channel else {
             return Err(Error::ChannelClosed);
         };
 
@@ -121,7 +119,7 @@ impl super::Input for Input {
                 for msg in msgset.messages() {
                     let fwd_msg: ForwardMode = rmp_serde::from_slice(msg.value)
                         .map_err(|e| Error::InvalidMessage(Box::new(e)))?;
-                    if fwd_msg.entries.len() > u32::max_value() as usize {
+                    if fwd_msg.entries.len() > u32::MAX as usize {
                         return Err(Error::TooManyEvents(fwd_msg.entries.len()));
                     }
                     let (remaining, overflow) =
@@ -142,7 +140,7 @@ impl super::Input for Input {
                                         loc: EntryLocation {
                                             remainder: remainder
                                                 .try_into()
-                                                .expect("remainder <= u32::max_values()"),
+                                                .expect("remainder <= u32::MAX"),
                                             partition,
                                             offset,
                                         },
@@ -155,9 +153,7 @@ impl super::Input for Input {
                                     break;
                                 }
                                 i if i == recv_ack => {
-                                    let ack = if let Ok(ack) = oper.recv(&self.ack_channel) {
-                                        ack
-                                    } else {
+                                    let Ok(ack) = oper.recv(&self.ack_channel) else {
                                         // ack_channel was disconnected. Exit the
                                         // loop and commit consumed.
                                         break 'poll;
@@ -243,7 +239,7 @@ where
     /// Returns an error if message serialization or transmission fails.
     pub fn run(&mut self) -> Result<(), kafka::Error> {
         let mut buf = Vec::new();
-        for msg in self.data_channel.iter() {
+        for msg in &self.data_channel {
             msg.serialize(&mut Serializer::new(&mut buf))
                 .map_err(|e| kafka::Error::Io(io::Error::new(io::ErrorKind::InvalidData, e)))?;
             self.producer

@@ -54,7 +54,7 @@ fn consume(hosts: Vec<String>) {
         "eventio".into(),
         "eventio-examples".into(),
         TOPIC.into(),
-        usize::max_value(),
+        usize::MAX,
     )
     .unwrap();
     let in_thread = thread::spawn(move || input.run().unwrap());
