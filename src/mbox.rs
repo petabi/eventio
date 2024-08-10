@@ -80,9 +80,7 @@ impl<T: Read> super::Input for Input<T> {
     ///
     /// Returns an error if reading an email from mbox fails.
     fn run(mut self) -> Result<(), Error> {
-        let data_channel = if let Some(channel) = &self.data_channel {
-            channel
-        } else {
+        let Some(data_channel) = &self.data_channel else {
             return Err(Error::ChannelClosed);
         };
 

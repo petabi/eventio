@@ -22,6 +22,9 @@ pub struct Input {
 unsafe impl Send for Input {}
 
 impl Input {
+    /// # Panics
+    ///
+    /// Will panic if fail to create reader
     pub fn with_read<R: Read + 'static>(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
@@ -40,9 +43,7 @@ impl super::Input for Input {
     type Ack = u64;
 
     fn run(mut self) -> Result<(), Error> {
-        let data_channel = if let Some(channel) = &self.data_channel {
-            channel
-        } else {
+        let Some(data_channel) = &self.data_channel else {
             return Err(Error::ChannelClosed);
         };
         let mut sel = crossbeam_channel::Select::new();

@@ -108,11 +108,9 @@ impl fmt::Display for Error {
             Self::CannotFetch(e) => write!(f, "cannot fetch message from Kafka: {e}"),
             Self::InvalidMessage(e) => write!(f, "invalid MessagePack format: {e}"),
             Self::Fatal(s) => write!(f, "fatal error: {s}"),
-            Self::TooManyEvents(n) => write!(
-                f,
-                "cannot handle {n} events (expected < {})",
-                u32::max_value()
-            ),
+            Self::TooManyEvents(n) => {
+                write!(f, "cannot handle {n} events (expected < {})", u32::MAX)
+            }
         }
     }
 }

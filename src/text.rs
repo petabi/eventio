@@ -32,9 +32,7 @@ impl<T: Read> super::Input for Input<T> {
     type Ack = super::SeqNo;
 
     fn run(mut self) -> Result<(), Error> {
-        let data_channel = if let Some(channel) = &self.data_channel {
-            channel
-        } else {
+        let Some(data_channel) = &self.data_channel else {
             return Err(Error::ChannelClosed);
         };
 
