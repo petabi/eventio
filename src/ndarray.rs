@@ -1,7 +1,8 @@
 //! assembling events from matrix
 
-use crate::{BareEvent, Error};
 use ndarray::{Array2, Axis};
+
+use crate::{BareEvent, Error};
 
 /// A single line as a byte sequence.
 pub type Event = BareEvent;
@@ -74,10 +75,12 @@ impl super::Input for Input {
 
 #[cfg(test)]
 mod tests {
-    use crate::{ndarray::Input as ndarray_input, Input};
-    use ndarray::arr2;
     use std::collections::HashMap;
     use std::thread;
+
+    use ndarray::arr2;
+
+    use crate::{ndarray::Input as ndarray_input, Input};
 
     #[test]
     fn text_input() {

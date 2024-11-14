@@ -1,7 +1,8 @@
 //! Reading lines as events from a text input.
 
-use crate::{BareEvent, Error};
 use std::io::{BufRead, BufReader, Read};
+
+use crate::{BareEvent, Error};
 
 /// A single line as a byte sequence.
 pub type Event = BareEvent;
@@ -93,8 +94,9 @@ impl<T: Read> super::Input for Input<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{text, Input};
     use std::thread;
+
+    use crate::{text, Input};
 
     #[test]
     fn text_input() {

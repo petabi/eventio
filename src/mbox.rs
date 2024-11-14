@@ -1,8 +1,10 @@
 //! Reading emails as events from an mbox.
 
-use crate::{BareEvent, Error};
-use nom::{bytes::complete::tag, IResult};
 use std::io::{self, BufRead, BufReader, Read};
+
+use nom::{bytes::complete::tag, IResult};
+
+use crate::{BareEvent, Error};
 
 /// An email as a byte sequence.
 pub type Event = BareEvent;
@@ -126,9 +128,10 @@ fn mbox_magic(input: &[u8]) -> IResult<&[u8], &[u8]> {
 
 #[cfg(test)]
 mod tests {
-    use crate::Input;
     use std::io::Cursor;
     use std::thread;
+
+    use crate::Input;
 
     fn read_emails(text: &'static [u8]) -> Result<Vec<super::Event>, super::Error> {
         let (data_tx, data_rx) = crossbeam_channel::bounded(1);

@@ -1,5 +1,6 @@
-use crate::Event;
 use std::thread::{self, JoinHandle};
+
+use crate::Event;
 
 /// Spawns worker threads to process events in parallel.
 pub fn split<D, A, I, O, F, S, R>(
@@ -45,8 +46,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{text, Input};
     use std::thread;
+
+    use crate::{text, Input};
 
     #[test]
     fn split() {

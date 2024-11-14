@@ -15,9 +15,10 @@ pub mod pcap;
 mod pipeline;
 pub mod text;
 
-pub use pipeline::split;
 use std::error;
 use std::fmt;
+
+pub use self::pipeline::split;
 
 /// A trait for a data source that produces messages of type `Data`.
 pub trait Input {

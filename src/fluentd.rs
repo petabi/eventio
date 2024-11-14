@@ -3,9 +3,10 @@
 //! [Fluentd Forward Protocol]:
 //! https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
-use std::collections::HashMap;
 
 /// An array representation of pairs of time and record, used in Forward mode.
 ///

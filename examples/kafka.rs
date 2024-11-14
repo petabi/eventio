@@ -1,9 +1,10 @@
-use eventio::fluentd::{Entry, ForwardMode};
-use eventio::{kafka, Input};
-use serde_bytes::ByteBuf;
 use std::collections::HashMap;
 use std::env;
 use std::thread;
+
+use eventio::fluentd::{Entry, ForwardMode};
+use eventio::{kafka, Input};
+use serde_bytes::ByteBuf;
 
 const TOPIC: &str = "eventio-examples";
 

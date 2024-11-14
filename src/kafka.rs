@@ -1,13 +1,15 @@
 //! Reading/writing events from/to Apache Kafka servers.
 
-use crate::fluentd::{Entry, ForwardMode};
-use crate::Error;
+use std::convert::TryInto;
+use std::io;
+
 use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};
 use kafka::producer::{Producer, Record, RequiredAcks};
 use rmp_serde::Serializer;
 use serde::Serialize;
-use std::convert::TryInto;
-use std::io;
+
+use crate::fluentd::{Entry, ForwardMode};
+use crate::Error;
 
 /// An event included in a Kafka message at `loc`.
 #[derive(Debug)]

@@ -1,12 +1,13 @@
 //! Reading packets as events from a pcap input.
 
-use crate::{BareEvent, Error};
 use std::io::{self, Read};
 
 use pcap_parser::{
     create_reader, data::get_packetdata_ethernet, data::PacketData, traits::PcapReaderIterator,
     Block, PcapBlockOwned, PcapError,
 };
+
+use crate::{BareEvent, Error};
 
 /// A packet as a byte sequence;
 pub type Event = BareEvent;
@@ -122,10 +123,12 @@ impl super::Input for Input {
 
 #[cfg(test)]
 mod tests {
-    use crate::{pcap, Input};
-    use pcap_parser::{LegacyPcapBlock, PcapHeader, ToVec};
     use std::io::Cursor;
     use std::thread;
+
+    use pcap_parser::{LegacyPcapBlock, PcapHeader, ToVec};
+
+    use crate::{pcap, Input};
 
     fn create_pcap() -> Cursor<Vec<u8>> {
         let fake_content = b"fake packet";
