@@ -6,11 +6,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Install Rust
-        uses: hecrj/setup-rust-action@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          rust-version: stable
-      - uses: actions/checkout@v2
+          components: clippy, rustfmt
       - name: Check formatting
         run: cargo fmt -- --check --config group_imports=StdExternalCrate
       - name: Clippy
@@ -23,13 +23,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        rust: [stable, 1.66.0]
     steps:
       - name: Install Rust
-        uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: ${{ matrix.rust }}
-      - uses: actions/checkout@v2
+        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
       - name: Install Tarpaulin
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         run: cargo install cargo-tarpaulin --version 0.18.0-alpha3
@@ -45,3 +42,12 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{secrets.CODECOV_TOKEN}}
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.66.0
+      - name: Build
+        run: cargo build --verbose --all-features
