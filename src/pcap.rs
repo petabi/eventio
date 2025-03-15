@@ -99,7 +99,7 @@ impl super::Input for Input {
                     self.iter.consume_noshift(offset);
                 }
                 Err(PcapError::Eof) => break 'poll,
-                Err(PcapError::Incomplete) => {
+                Err(PcapError::Incomplete(_)) => {
                     self.iter.refill().map_err(|e| {
                         Error::CannotFetch(Box::new(io::Error::new(
                             io::ErrorKind::Other,
