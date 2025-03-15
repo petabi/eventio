@@ -76,7 +76,7 @@ impl Input {
             .with_group(group)
             .with_fallback_offset(FetchOffset::Earliest)
             .with_fetch_max_bytes_per_partition(1_000_000)
-            .with_offset_storage(GroupOffsetStorage::Kafka)
+            .with_offset_storage(Some(GroupOffsetStorage::Kafka))
             .with_client_id(client_id)
             .with_topic(topic)
             .create()?;
