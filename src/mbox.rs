@@ -123,7 +123,7 @@ impl<T: Read> super::Input for Input<T> {
 }
 
 fn mbox_magic(input: &[u8]) -> IResult<&[u8], &[u8]> {
-    tag(b"From ")(input)
+    tag(&b"From "[..])(input)
 }
 
 #[cfg(test)]
