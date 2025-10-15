@@ -24,7 +24,7 @@ pcap = ["pcap-parser"]
 [dependencies]
 crossbeam-channel = "0.5"
 kafka = { version = "0.10", default-features = false, optional = true }
-ndarray = { version = "0.16", optional = true }
+ndarray = { version = "0.17", optional = true }
 nom = "8"
 pcap-parser = { version = "0.16", features = [
     "data",
