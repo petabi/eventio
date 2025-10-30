@@ -21,7 +21,6 @@ pub struct Event {
 impl crate::Event for Event {
     type Ack = EntryLocation;
 
-    #[must_use]
     fn raw(&self) -> &[u8] {
         self.entry
             .record
@@ -29,12 +28,10 @@ impl crate::Event for Event {
             .map_or(b"", |v| v.as_slice())
     }
 
-    #[must_use]
     fn time(&self) -> super::SeqNo {
         super::SeqNo::from_ne_bytes(self.entry.time.to_ne_bytes())
     }
 
-    #[must_use]
     fn ack(&self) -> Self::Ack {
         self.loc
     }

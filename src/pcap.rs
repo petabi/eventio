@@ -142,7 +142,7 @@ mod tests {
         .to_vec_raw()
         .unwrap();
         let mut buf = PcapHeader::new().to_vec_raw().unwrap();
-        for _ in (0..10).into_iter() {
+        for _ in 0..10 {
             buf.extend(pkt.iter());
         }
         Cursor::new(buf)
