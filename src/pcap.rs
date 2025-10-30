@@ -90,7 +90,7 @@ impl super::Input for Input {
                                         // ack_channel was disconnected. Exit the
                                         // loop and commit consumed.
                                         break 'poll;
-                                    };
+                                    }
                                 }
                                 _ => unreachable!(),
                             }
