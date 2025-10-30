@@ -80,7 +80,7 @@ impl<T: Read> super::Input for Input<T> {
                             // ack_channel was disconnected. Exit the
                             // loop and commit consumed.
                             break 'poll;
-                        };
+                        }
                     }
                     _ => unreachable!(),
                 }
