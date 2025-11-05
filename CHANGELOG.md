@@ -9,6 +9,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Updated ndarray to 0.17.
 - Updated kafka to 0.10.
 - Updated pcap-parser to 0.17. This requires the `Read` type parameter in
   `pcap::Input::with_read` to implement `Send`.
