@@ -10,6 +10,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Updated kafka to 0.10.
+- Updated pcap-parser to 0.17. This requires the `Read` type parameter in
+  `pcap::Input::with_read` to implement `Send`.
 - The minimum version of Rust required is now 1.68.
 
 ## [0.11.0] - 2024-08-09

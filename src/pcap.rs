@@ -26,7 +26,7 @@ impl Input {
     /// # Panics
     ///
     /// Will panic if fail to create reader
-    pub fn with_read<R: Read + 'static>(
+    pub fn with_read<R: Read + Send + 'static>(
         data_channel: crossbeam_channel::Sender<Event>,
         ack_channel: crossbeam_channel::Receiver<super::SeqNo>,
         read: R,
