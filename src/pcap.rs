@@ -132,11 +132,12 @@ mod tests {
 
     fn create_pcap() -> Cursor<Vec<u8>> {
         let fake_content = b"fake packet";
+        let packet_len = u32::try_from(fake_content.len()).unwrap();
         let pkt = LegacyPcapBlock {
             ts_sec: 0,
             ts_usec: 0,
-            caplen: fake_content.len() as u32,
-            origlen: fake_content.len() as u32,
+            caplen: packet_len,
+            origlen: packet_len,
             data: fake_content,
         }
         .to_vec_raw()
@@ -155,7 +156,7 @@ mod tests {
         let (ack_tx, ack_rx) = crossbeam_channel::bounded(1);
         let in_thread = thread::spawn(move || {
             let input = pcap::Input::with_read(data_tx, ack_rx, tester);
-            input.run().unwrap()
+            input.run().unwrap();
         });
 
         let mut events = Vec::new();
