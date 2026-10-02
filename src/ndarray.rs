@@ -80,7 +80,7 @@ mod tests {
 
     use ndarray::arr2;
 
-    use crate::{ndarray::Input as ndarray_input, Input};
+    use crate::{Input, ndarray::Input as ndarray_input};
 
     #[test]
     fn text_input() {

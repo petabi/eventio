@@ -2,8 +2,8 @@
 name = "eventio"
 version = "0.12.0"
 authors = ["Min Kim <msk@dolbo.net>", "Min Shao <min.shao1988@gmail.com>"]
-edition = "2021"
-rust-version = "1.68"
+edition = "2024"
+rust-version = "1.85"
 description = "A collection of event I/O processors for event-processing applications."
 documentation = "https://docs.rs/eventio"
 readme = "README.md"

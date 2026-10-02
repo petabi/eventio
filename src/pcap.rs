@@ -3,8 +3,8 @@
 use std::io::{self, Read};
 
 use pcap_parser::{
-    create_reader, data::get_packetdata_ethernet, data::PacketData, traits::PcapReaderIterator,
-    Block, PcapBlockOwned, PcapError,
+    Block, PcapBlockOwned, PcapError, create_reader, data::PacketData,
+    data::get_packetdata_ethernet, traits::PcapReaderIterator,
 };
 
 use crate::{BareEvent, Error};
@@ -128,7 +128,7 @@ mod tests {
 
     use pcap_parser::{LegacyPcapBlock, PcapHeader, ToVec};
 
-    use crate::{pcap, Input};
+    use crate::{Input, pcap};
 
     fn create_pcap() -> Cursor<Vec<u8>> {
         let fake_content = b"fake packet";
