@@ -96,7 +96,7 @@ impl<T: Read> super::Input for Input<T> {
 mod tests {
     use std::thread;
 
-    use crate::{text, Input};
+    use crate::{Input, text};
 
     #[test]
     fn text_input() {

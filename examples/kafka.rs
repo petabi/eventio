@@ -3,7 +3,7 @@ use std::env;
 use std::thread;
 
 use eventio::fluentd::{Entry, ForwardMode};
-use eventio::{kafka, Input};
+use eventio::{Input, kafka};
 use serde_bytes::ByteBuf;
 
 const TOPIC: &str = "eventio-examples";

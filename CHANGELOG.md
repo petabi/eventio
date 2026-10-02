@@ -5,6 +5,12 @@ file is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Chagned
+
+- The minimum version of Rust required is now 1.85.
+
 ## [0.12.0] - 2025-11-05
 
 ### Changed
@@ -149,6 +155,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Kafka input/output and an example of their usage.
 
+[Unreleased]: https://github.com/petabi/eventio/compare/0.12.0...main
 [0.12.0]: https://github.com/petabi/eventio/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/petabi/eventio/compare/0.10.1...0.11.0
 [0.10.1]: https://github.com/petabi/eventio/compare/0.10.0...0.10.1

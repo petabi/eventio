@@ -48,7 +48,7 @@ where
 mod tests {
     use std::thread;
 
-    use crate::{text, Input};
+    use crate::{Input, text};
 
     #[test]
     fn split() {

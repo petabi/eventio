@@ -2,7 +2,7 @@
 
 use std::io::{self, BufRead, BufReader, Read};
 
-use nom::{bytes::complete::tag, IResult};
+use nom::{IResult, bytes::complete::tag};
 
 use crate::{BareEvent, Error};
 

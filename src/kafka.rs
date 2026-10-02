@@ -8,8 +8,8 @@ use kafka::producer::{Producer, Record, RequiredAcks};
 use rmp_serde::Serializer;
 use serde::Serialize;
 
-use crate::fluentd::{Entry, ForwardMode};
 use crate::Error;
+use crate::fluentd::{Entry, ForwardMode};
 
 /// An event included in a Kafka message at `loc`.
 #[derive(Debug)]
