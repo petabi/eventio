@@ -101,17 +101,15 @@ impl super::Input for Input {
                 Err(PcapError::Eof) => break 'poll,
                 Err(PcapError::Incomplete(_)) => {
                     self.iter.refill().map_err(|e| {
-                        Error::CannotFetch(Box::new(io::Error::new(
-                            io::ErrorKind::Other,
-                            format!("cannot read packet from pcap: {e:?}"),
-                        )))
+                        Error::CannotFetch(Box::new(io::Error::other(format!(
+                            "cannot read packet from pcap: {e:?}"
+                        ))))
                     })?;
                 }
                 Err(e) => {
-                    return Err(Error::CannotFetch(Box::new(io::Error::new(
-                        io::ErrorKind::Other,
-                        format!("cannot read packet from pcap: {e:?}"),
-                    ))));
+                    return Err(Error::CannotFetch(Box::new(io::Error::other(format!(
+                        "cannot read packet from pcap: {e:?}"
+                    )))));
                 }
             }
         }

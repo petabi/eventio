@@ -44,8 +44,7 @@ fn check_magic_number<T: Read>(reader: &mut BufReader<T>) -> Result<(), Error> {
         .map_err(|e| Error::CannotFetch(Box::new(e)))?;
     match mbox_magic(&buf) {
         Ok(_) => Ok(()),
-        Err(_) => Err(Error::InvalidMessage(Box::new(io::Error::new(
-            io::ErrorKind::Other,
+        Err(_) => Err(Error::InvalidMessage(Box::new(io::Error::other(
             "wrong format",
         )))),
     }
